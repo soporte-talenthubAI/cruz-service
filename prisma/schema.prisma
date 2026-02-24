@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  RRPP
+  PORTERO
+}
+
+enum TipoEvento {
+  NORMAL
+  ESPECIAL
+}
+
+enum EstadoEntrada {
+  PENDIENTE
+  ENVIADO
+  INGRESADO
+  INVALIDADO
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       Rol
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entradas Entrada[] @relation("GeneradaPor")
+}
+
+model Evento {
+  id           String     @id @default(cuid())
+  nombre       String
+  fecha        DateTime
+  horaApertura String
+  tipo         TipoEvento @default(NORMAL)
+  capacidad    Int
+  flyerUrl     String?
+  activo       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  entradas Entrada[]
+}
+
+model Entrada {
+  id             String        @id @default(cuid())
+  nombreInvitado String
+  dniInvitado    String
+  emailInvitado  String
+  estado         EstadoEntrada @default(PENDIENTE)
+  qrCode         String        @unique @default(cuid())
+  emailEnviado   Boolean       @default(false)
+  fechaEnvio     DateTime?
+  fechaIngreso   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  evento        Evento  @relation(fields: [eventoId], references: [id])
+  eventoId      String
+  generadoPor   Usuario @relation("GeneradaPor", fields: [generadoPorId], references: [id])
+  generadoPorId String
+}
