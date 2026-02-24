@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/Input";
@@ -106,9 +107,12 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 text-center">
-            <button className="text-sm text-gold-500/70 hover:text-gold-500 transition-colors">
+            <Link
+              href="/olvide-password"
+              className="text-sm text-gold-500/70 hover:text-gold-500 transition-colors"
+            >
               ¿Olvidaste tu contraseña?
-            </button>
+            </Link>
           </div>
         </div>
 

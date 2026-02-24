@@ -35,7 +35,19 @@ model Usuario {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  entradas Entrada[] @relation("GeneradaPor")
+  entradas    Entrada[]    @relation("GeneradaPor")
+  resetTokens ResetToken[]
+}
+
+model ResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  usuarioId String
 }
 
 model Evento {
