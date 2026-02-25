@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Ticket, Users, Calendar, QrCode, ScanLine, Clock, Shield } from "lucide-react";
+import { Ticket, Users, Calendar, QrCode, ScanLine, Clock, Shield, UserPlus } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
 import { EventCard } from "@/components/events/EventCard";
 import { Spinner } from "@/components/ui/Spinner";
@@ -64,6 +64,7 @@ interface PorteroStats {
 }
 
 function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +117,16 @@ function AdminDashboard() {
           icon={<Users />}
         />
       </div>
+
+      <Button
+        variant="surface"
+        size="md"
+        className="w-full"
+        leftIcon={<UserPlus size={18} />}
+        onClick={() => router.push("/usuarios")}
+      >
+        Gestionar equipo
+      </Button>
 
       {stats && (
         <div className="glass-card p-4">

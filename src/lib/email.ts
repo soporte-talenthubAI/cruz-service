@@ -139,6 +139,103 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
   return { success: true };
 }
 
+// ============================================
+// Welcome Email (new user setup password)
+// ============================================
+
+interface WelcomeEmailData {
+  to: string;
+  nombre: string;
+  rol: string;
+  setupUrl: string;
+}
+
+export async function sendWelcomeEmail(data: WelcomeEmailData) {
+  const resend = getResend();
+
+  const rolLabel: Record<string, string> = {
+    RRPP: "RRPP",
+    PORTERO: "Seguridad",
+    ADMIN: "Administrador",
+  };
+
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: data.to,
+    subject: "Bienvenido a Cruz Espacio — Configurá tu contraseña",
+    html: buildWelcomeEmailHtml({ ...data, rolDisplay: rolLabel[data.rol] || data.rol }),
+  });
+
+  if (error) {
+    console.error("Error sending welcome email:", error);
+    throw new Error(`Error al enviar email: ${error.message}`);
+  }
+
+  return { success: true };
+}
+
+function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A0A0A;padding:24px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="400" cellpadding="0" cellspacing="0" style="max-width:400px;width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding:32px 0;text-align:center;">
+              <div style="font-size:28px;font-weight:700;letter-spacing:6px;color:#C5A059;">CRUZ</div>
+              <div style="font-size:11px;letter-spacing:4px;color:#A0A0A0;margin-top:4px;">ESPACIO</div>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#111111;border:1px solid #333;border-radius:16px;padding:32px 24px;">
+              <div style="font-size:18px;font-weight:700;color:#E8E8E8;margin-bottom:12px;">Bienvenido, ${data.nombre}</div>
+              <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:8px;">
+                Se creó tu cuenta en Cruz Espacio con el rol de <strong style="color:#C5A059;">${data.rolDisplay}</strong>.
+              </div>
+              <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:24px;">
+                Para empezar, configurá tu contraseña haciendo click en el botón:
+              </div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${data.setupUrl}" style="display:inline-block;background-color:#C5A059;color:#000;font-weight:bold;font-size:16px;padding:15px 30px;border-radius:5px;text-decoration:none;">
+                      CONFIGURAR CONTRASEÑA
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <div style="font-size:12px;color:#505050;margin-top:24px;line-height:1.5;">
+                Este enlace expira en 24 horas.
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 0;text-align:center;">
+              <div style="font-size:10px;color:#333333;">Cruz Espacio — Sistema de Gestión</div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 function buildPasswordResetEmailHtml(data: PasswordResetEmailData): string {
   return `
 <!DOCTYPE html>
