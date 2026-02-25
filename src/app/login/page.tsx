@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import Image from "next/image";
@@ -33,7 +33,11 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Redirect based on role
+    const session = await getSession();
+    const role = (session?.user as { role?: string })?.role?.toLowerCase();
+    const redirectPath = role === "rrpp" ? "/inicio" : "/dashboard";
+    router.push(redirectPath);
     router.refresh();
   };
 
