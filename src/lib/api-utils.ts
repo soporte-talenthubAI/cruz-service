@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "./auth";
 
 export function successResponse(data: unknown, status = 200) {
-  return NextResponse.json(data, { status });
+  return NextResponse.json({ data }, { status });
 }
 
 export function errorResponse(message: string, status = 400) {

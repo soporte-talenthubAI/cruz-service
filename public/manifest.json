@@ -1,0 +1,18 @@
+{
+  "name": "Cruz Espacio",
+  "short_name": "Cruz",
+  "description": "Sistema de gestión de entradas con QR - Cruz Espacio",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/cruz_espacio.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
