@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Calendar, Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EventCard } from "@/components/events/EventCard";
@@ -9,6 +10,14 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
+
+interface EventoStats {
+  total: number;
+  pendientes: number;
+  enviadas: number;
+  ingresadas: number;
+  invalidadas: number;
+}
 
 interface Evento {
   id: string;
@@ -20,11 +29,19 @@ interface Evento {
   flyerUrl?: string;
   activo: boolean;
   _count: { entradas: number };
+  stats: EventoStats;
 }
 
+type Tab = "upcoming" | "past";
+
 export default function EventosPage() {
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>("upcoming");
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -36,21 +53,42 @@ export default function EventosPage() {
   const [tipo, setTipo] = useState<"NORMAL" | "ESPECIAL">("NORMAL");
   const [capacidad, setCapacidad] = useState("");
 
-  const fetchEventos = async () => {
+  const fetchEventos = async (pageNum: number, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
+
     try {
-      const res = await fetch("/api/eventos");
-      const data = await res.json();
-      if (res.ok) setEventos(data.data || []);
+      const res = await fetch(`/api/eventos?status=${tab}&page=${pageNum}&limit=10`);
+      const json = await res.json();
+      if (res.ok) {
+        const data = json.data;
+        if (append) {
+          setEventos((prev) => [...prev, ...(data.eventos || [])]);
+        } else {
+          setEventos(data.eventos || []);
+        }
+        setTotalPages(data.meta?.totalPages || 1);
+      }
     } catch {
       // silently fail
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchEventos();
-  }, []);
+    setPage(1);
+    setEventos([]);
+    fetchEventos(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  const loadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    fetchEventos(next, true);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +120,8 @@ export default function EventosPage() {
       setHoraApertura("");
       setTipo("NORMAL");
       setCapacidad("");
-      fetchEventos();
+      setPage(1);
+      fetchEventos(1);
     } catch {
       setError("Error de conexión");
     } finally {
@@ -90,13 +129,14 @@ export default function EventosPage() {
     }
   };
 
+  const isPast = tab === "past";
+
   if (loading) return <Spinner fullscreen />;
 
   return (
     <div className="space-y-4 animate-fade-in">
       <PageHeader
         title="Eventos"
-        subtitle={`${eventos.length} evento${eventos.length !== 1 ? "s" : ""}`}
         actions={
           <Button
             variant="gold"
@@ -109,6 +149,24 @@ export default function EventosPage() {
         }
       />
 
+      {/* Tabs */}
+      <div className="flex gap-2">
+        {(["upcoming", "past"] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              tab === t
+                ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
+                : "bg-surface-2 text-dark-400 border border-transparent"
+            }`}
+          >
+            {t === "upcoming" ? "Próximos" : "Pasados"}
+          </button>
+        ))}
+      </div>
+
+      {/* Event list */}
       {eventos.length > 0 ? (
         <div className="space-y-3">
           {eventos.map((e) => (
@@ -119,18 +177,33 @@ export default function EventosPage() {
               time={e.horaApertura}
               type={e.tipo.toLowerCase() as "normal" | "especial"}
               capacity={e.capacidad}
-              ticketsSold={e._count.entradas}
+              ticketsSold={e.stats.total}
+              ingresados={e.stats.ingresadas}
+              isPast={isPast}
               flyerUrl={e.flyerUrl}
+              onClick={() => router.push(`/eventos/${e.id}`)}
             />
           ))}
+
+          {page < totalPages && (
+            <Button
+              variant="ghost"
+              size="md"
+              className="w-full"
+              loading={loadingMore}
+              onClick={loadMore}
+            >
+              Cargar más
+            </Button>
+          )}
         </div>
       ) : (
         <EmptyState
           icon={<Calendar />}
-          title="Sin eventos"
-          description="Creá tu primer evento para empezar a generar entradas"
-          actionLabel="Crear evento"
-          onAction={() => setShowModal(true)}
+          title={isPast ? "Sin eventos pasados" : "Sin eventos próximos"}
+          description={isPast ? "No hay eventos finalizados" : "Creá tu primer evento"}
+          actionLabel={isPast ? undefined : "Crear evento"}
+          onAction={isPast ? undefined : () => setShowModal(true)}
         />
       )}
 

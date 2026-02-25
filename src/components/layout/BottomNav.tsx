@@ -12,6 +12,7 @@ import {
   Home,
   QrCode,
   Ticket,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,12 @@ const navItems: Record<UserRole, NavItem[]> = {
     { href: "/mis-qrs", label: "Mis QRs", icon: <Ticket size={22} /> },
     { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
   ],
-  portero: [],
+  portero: [
+    { href: "/dashboard", label: "Panel", icon: <LayoutDashboard size={22} /> },
+    { href: "/scanner", label: "Scanner", icon: <ScanLine size={22} />, central: true },
+    { href: "/historial", label: "Historial", icon: <ClipboardList size={22} /> },
+    { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
+  ],
 };
 
 interface BottomNavProps {

@@ -20,11 +20,7 @@ interface Evento {
   capacidad: number;
   flyerUrl?: string;
   _count: { entradas: number };
-}
-
-interface Entrada {
-  id: string;
-  createdAt: string;
+  stats: { total: number };
 }
 
 export default function InicioPage() {
@@ -33,20 +29,36 @@ export default function InicioPage() {
   const userName = session?.user?.name || "Usuario";
 
   const [eventos, setEventos] = useState<Evento[]>([]);
-  const [entradas, setEntradas] = useState<Entrada[]>([]);
+  const [totalEntradas, setTotalEntradas] = useState(0);
+  const [entradasHoy, setEntradasHoy] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [eventosRes, entradasRes] = await Promise.all([
-          fetch("/api/eventos"),
-          fetch("/api/entradas"),
+          fetch("/api/eventos?status=upcoming&limit=5"),
+          fetch("/api/entradas?limit=1"),
         ]);
         const eventosData = await eventosRes.json();
         const entradasData = await entradasRes.json();
-        if (eventosRes.ok) setEventos(eventosData.data || []);
-        if (entradasRes.ok) setEntradas(entradasData.data || []);
+        if (eventosRes.ok) setEventos(eventosData.data?.eventos || []);
+        if (entradasRes.ok) {
+          setTotalEntradas(entradasData.data?.meta?.total || 0);
+        }
+
+        // Fetch today's entries
+        const today = new Date().toISOString().split("T")[0];
+        const todayRes = await fetch(`/api/entradas?limit=1`);
+        const todayData = await todayRes.json();
+        if (todayRes.ok) {
+          // Count from total since API filters by RRPP already
+          const allEntradas = todayData.data?.entradas || [];
+          const todayCount = allEntradas.filter(
+            (e: { createdAt: string }) => e.createdAt.startsWith(today)
+          ).length;
+          setEntradasHoy(todayCount);
+        }
       } catch {
         // silently fail
       } finally {
@@ -55,11 +67,6 @@ export default function InicioPage() {
     }
     fetchData();
   }, []);
-
-  const today = new Date().toDateString();
-  const entradasHoy = entradas.filter(
-    (e) => new Date(e.createdAt).toDateString() === today
-  ).length;
 
   if (loading) return <Spinner fullscreen />;
 
@@ -77,7 +84,7 @@ export default function InicioPage() {
           icon={<QrCode />}
         />
         <StatCard
-          value={entradas.length}
+          value={totalEntradas}
           label="Mis entradas"
           icon={<Ticket />}
         />
@@ -105,7 +112,7 @@ export default function InicioPage() {
                 time={e.horaApertura}
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}
-                ticketsSold={e._count.entradas}
+                ticketsSold={e.stats.total}
                 flyerUrl={e.flyerUrl}
               />
             ))}

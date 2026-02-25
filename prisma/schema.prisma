@@ -35,8 +35,9 @@ model Usuario {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  entradas    Entrada[]    @relation("GeneradaPor")
-  resetTokens ResetToken[]
+  entradas     Entrada[]    @relation("GeneradaPor")
+  validaciones Entrada[]    @relation("ValidadaPor")
+  resetTokens  ResetToken[]
 }
 
 model ResetToken {
@@ -82,4 +83,6 @@ model Entrada {
   eventoId      String
   generadoPor   Usuario @relation("GeneradaPor", fields: [generadoPorId], references: [id])
   generadoPorId String
+  validadoPor   Usuario? @relation("ValidadaPor", fields: [validadoPorId], references: [id])
+  validadoPorId String?
 }

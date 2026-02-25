@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
 
@@ -17,7 +18,7 @@ interface Entrada {
   estado: "PENDIENTE" | "ENVIADO" | "INGRESADO" | "INVALIDADO";
   qrCode: string;
   createdAt: string;
-  evento: { nombre: string; fecha: string };
+  evento: { nombre: string; fecha: string; horaApertura: string };
   generadoPor: { nombre: string };
 }
 
@@ -26,7 +27,7 @@ interface Evento {
   nombre: string;
 }
 
-const estadoColors: Record<string, string> = {
+const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "invalidado"> = {
   PENDIENTE: "pendiente",
   ENVIADO: "enviado",
   INGRESADO: "ingresado",
@@ -37,35 +38,77 @@ export default function PublicasPage() {
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [filtroEvento, setFiltroEvento] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Entrada | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [entradasRes, eventosRes] = await Promise.all([
-          fetch("/api/entradas"),
-          fetch("/api/eventos"),
-        ]);
-        const entradasData = await entradasRes.json();
-        const eventosData = await eventosRes.json();
-        if (entradasRes.ok) setEntradas(entradasData.data || []);
-        if (eventosRes.ok) setEventos(eventosData.data || []);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
+  const fetchEntradas = async (pageNum: number, append = false) => {
+    if (append) setLoadingMore(true);
+
+    try {
+      const params = new URLSearchParams({
+        page: String(pageNum),
+        limit: "20",
+      });
+      if (filtroEvento) params.set("eventoId", filtroEvento);
+      if (filtroEstado) params.set("estado", filtroEstado);
+      if (searchQuery) params.set("search", searchQuery);
+
+      const res = await fetch(`/api/entradas?${params}`);
+      const json = await res.json();
+      if (res.ok) {
+        const data = json.data;
+        if (append) {
+          setEntradas((prev) => [...prev, ...(data.entradas || [])]);
+        } else {
+          setEntradas(data.entradas || []);
+        }
+        setTotalPages(data.meta?.totalPages || 1);
+        setTotal(data.meta?.total || 0);
       }
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingMore(false);
     }
-    fetchData();
+  };
+
+  const fetchEventos = async () => {
+    try {
+      const res = await fetch("/api/eventos?status=all&limit=50");
+      const json = await res.json();
+      if (res.ok) setEventos(json.data?.eventos || []);
+    } catch {
+      // silently fail
+    }
+  };
+
+  useEffect(() => {
+    async function init() {
+      await Promise.all([fetchEntradas(1), fetchEventos()]);
+      setLoading(false);
+    }
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filtered = entradas.filter((e) => {
-    if (filtroEvento && e.evento.nombre !== filtroEvento) return false;
-    if (filtroEstado && e.estado !== filtroEstado) return false;
-    return true;
-  });
+  useEffect(() => {
+    setPage(1);
+    setEntradas([]);
+    fetchEntradas(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroEvento, filtroEstado, searchQuery]);
+
+  const loadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    fetchEntradas(next, true);
+  };
 
   if (loading) return <Spinner fullscreen />;
 
@@ -73,8 +116,20 @@ export default function PublicasPage() {
     <div className="space-y-4 animate-fade-in">
       <PageHeader
         title="Entradas"
-        subtitle={`${filtered.length} entrada${filtered.length !== 1 ? "s" : ""}`}
+        subtitle={`${total} entrada${total !== 1 ? "s" : ""}`}
       />
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
+        <input
+          type="text"
+          placeholder="Buscar por nombre o DNI..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl pl-9 pr-4 py-2.5 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
+        />
+      </div>
 
       {/* Filters */}
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -85,26 +140,32 @@ export default function PublicasPage() {
         >
           <option value="">Todos los eventos</option>
           {eventos.map((ev) => (
-            <option key={ev.id} value={ev.nombre}>{ev.nombre}</option>
+            <option key={ev.id} value={ev.id}>{ev.nombre}</option>
           ))}
-        </select>
-        <select
-          value={filtroEstado}
-          onChange={(e) => setFiltroEstado(e.target.value)}
-          className="bg-surface-2 text-dark-200 text-sm rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.06)] outline-none"
-        >
-          <option value="">Todos los estados</option>
-          <option value="PENDIENTE">Pendiente</option>
-          <option value="ENVIADO">Enviado</option>
-          <option value="INGRESADO">Ingresado</option>
-          <option value="INVALIDADO">Invalidado</option>
         </select>
       </div>
 
+      {/* Status pills */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {["", "PENDIENTE", "ENVIADO", "INGRESADO", "INVALIDADO"].map((estado) => (
+          <button
+            key={estado}
+            onClick={() => setFiltroEstado(estado)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              filtroEstado === estado
+                ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
+                : "bg-surface-2 text-dark-400 border border-transparent"
+            }`}
+          >
+            {estado || "Todas"}
+          </button>
+        ))}
+      </div>
+
       {/* List */}
-      {filtered.length > 0 ? (
+      {entradas.length > 0 ? (
         <div className="space-y-2">
-          {filtered.map((entrada) => (
+          {entradas.map((entrada) => (
             <button
               key={entrada.id}
               onClick={() => setSelected(entrada)}
@@ -115,11 +176,23 @@ export default function PublicasPage() {
                 <p className="text-xs text-dark-400">DNI: {entrada.dniInvitado}</p>
                 <p className="text-xs text-dark-500 mt-0.5">{entrada.evento.nombre} — {entrada.generadoPor.nombre}</p>
               </div>
-              <Badge variant={estadoColors[entrada.estado] as "pendiente" | "enviado" | "ingresado" | "invalidado"}>
+              <Badge variant={estadoVariant[entrada.estado]}>
                 {entrada.estado}
               </Badge>
             </button>
           ))}
+
+          {page < totalPages && (
+            <Button
+              variant="ghost"
+              size="md"
+              className="w-full"
+              loading={loadingMore}
+              onClick={loadMore}
+            >
+              Cargar más
+            </Button>
+          )}
         </div>
       ) : (
         <EmptyState
@@ -135,7 +208,7 @@ export default function PublicasPage() {
           <QRDisplay
             eventName={selected.evento.nombre}
             eventDate={new Date(selected.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-            eventTime=""
+            eventTime={selected.evento.horaApertura || ""}
             guestName={selected.nombreInvitado}
             guestDni={selected.dniInvitado}
             guestEmail={selected.emailInvitado}
@@ -146,10 +219,7 @@ export default function PublicasPage() {
             onSendEmail={async () => {
               await fetch(`/api/entradas/${selected.id}/enviar`, { method: "POST" });
               setSelected(null);
-              // Refresh
-              const res = await fetch("/api/entradas");
-              const data = await res.json();
-              if (res.ok) setEntradas(data.data || []);
+              fetchEntradas(1);
             }}
           />
         )}

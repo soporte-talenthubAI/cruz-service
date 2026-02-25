@@ -15,7 +15,7 @@ interface Evento {
   fecha: string;
   horaApertura: string;
   capacidad: number;
-  _count: { entradas: number };
+  stats: { total: number };
 }
 
 interface EntradaCreada {
@@ -25,7 +25,7 @@ interface EntradaCreada {
   emailInvitado: string;
   qrCode: string;
   estado: string;
-  evento: { nombre: string; fecha: string };
+  evento: { nombre: string; fecha: string; horaApertura: string };
   generadoPor: { nombre: string };
 }
 
@@ -45,9 +45,9 @@ export default function NuevoQRPage() {
   useEffect(() => {
     async function fetchEventos() {
       try {
-        const res = await fetch("/api/eventos");
-        const data = await res.json();
-        if (res.ok) setEventos(data.data || []);
+        const res = await fetch("/api/eventos?status=upcoming&limit=50");
+        const json = await res.json();
+        if (res.ok) setEventos(json.data?.eventos || []);
       } catch {
         // silently fail
       } finally {
@@ -102,14 +102,13 @@ export default function NuevoQRPage() {
 
   // Show QR after creation
   if (entradaCreada) {
-    const eventoData = eventos.find((e) => e.id === eventoId);
     return (
       <div className="space-y-4 animate-fade-in">
         <PageHeader title="Entrada creada" />
         <QRDisplay
           eventName={entradaCreada.evento.nombre}
           eventDate={new Date(entradaCreada.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-          eventTime={eventoData?.horaApertura || ""}
+          eventTime={entradaCreada.evento.horaApertura || ""}
           guestName={entradaCreada.nombreInvitado}
           guestDni={entradaCreada.dniInvitado}
           guestEmail={entradaCreada.emailInvitado}
@@ -165,13 +164,13 @@ export default function NuevoQRPage() {
                 <option value="">Seleccionar evento...</option>
                 {eventos.map((ev) => (
                   <option key={ev.id} value={ev.id}>
-                    {ev.nombre} — {ev._count.entradas}/{ev.capacidad}
+                    {ev.nombre} — {ev.stats.total}/{ev.capacidad}
                   </option>
                 ))}
               </select>
             </div>
 
-            {selectedEvento && selectedEvento._count.entradas >= selectedEvento.capacidad && (
+            {selectedEvento && selectedEvento.stats.total >= selectedEvento.capacidad && (
               <div className="rounded-xl bg-warning/10 border border-warning/30 p-3 text-sm text-warning">
                 Este evento está lleno ({selectedEvento.capacidad}/{selectedEvento.capacidad})
               </div>

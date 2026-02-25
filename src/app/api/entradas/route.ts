@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const eventoId = searchParams.get("eventoId");
     const estado = searchParams.get("estado");
+    const search = searchParams.get("search");
+    const page = Math.max(1, Number(searchParams.get("page") || "1"));
+    const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || "20")));
+    const skip = (page - 1) * limit;
 
     const userRole = (session.user as { role: string }).role;
     const userId = session.user.id;
@@ -22,21 +26,42 @@ export async function GET(request: NextRequest) {
     if (eventoId) where.eventoId = eventoId;
     if (estado) where.estado = estado;
 
+    // Search by name or DNI
+    if (search) {
+      where.OR = [
+        { nombreInvitado: { contains: search, mode: "insensitive" } },
+        { dniInvitado: { contains: search } },
+      ];
+    }
+
     // RRPP solo ve sus propias entradas
     if (userRole === "RRPP") {
       where.generadoPorId = userId;
     }
 
-    const entradas = await prisma.entrada.findMany({
-      where,
-      include: {
-        evento: { select: { nombre: true, fecha: true } },
-        generadoPor: { select: { nombre: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const [entradas, total] = await Promise.all([
+      prisma.entrada.findMany({
+        where,
+        include: {
+          evento: { select: { nombre: true, fecha: true, horaApertura: true } },
+          generadoPor: { select: { nombre: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.entrada.count({ where }),
+    ]);
 
-    return successResponse(entradas);
+    return successResponse({
+      entradas,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }
@@ -77,7 +102,7 @@ export async function POST(request: NextRequest) {
         estado: "PENDIENTE",
       },
       include: {
-        evento: { select: { nombre: true, fecha: true } },
+        evento: { select: { nombre: true, fecha: true, horaApertura: true } },
         generadoPor: { select: { nombre: true } },
       },
     });

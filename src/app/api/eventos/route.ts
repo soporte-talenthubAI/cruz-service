@@ -8,19 +8,84 @@ import {
   handleApiError,
 } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await requireAuth();
 
-    const eventos = await prisma.evento.findMany({
-      where: { activo: true },
-      include: {
-        _count: { select: { entradas: true } },
-      },
-      orderBy: { fecha: "desc" },
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status") || "all"; // upcoming | past | all
+    const page = Math.max(1, Number(searchParams.get("page") || "1"));
+    const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || "10")));
+    const skip = (page - 1) * limit;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Build where clause
+    const where: Record<string, unknown> = {};
+
+    if (status === "upcoming") {
+      where.fecha = { gte: today };
+      where.activo = true;
+    } else if (status === "past") {
+      where.fecha = { lt: today };
+    }
+    // "all" → no date filter
+
+    const orderBy = status === "upcoming"
+      ? { fecha: "asc" as const }
+      : { fecha: "desc" as const };
+
+    const [eventos, total] = await Promise.all([
+      prisma.evento.findMany({
+        where,
+        include: {
+          _count: { select: { entradas: true } },
+          entradas: {
+            select: { estado: true },
+          },
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      prisma.evento.count({ where }),
+    ]);
+
+    // Map events to include stats
+    const eventosConStats = eventos.map((evento) => {
+      const estadoCounts = evento.entradas.reduce(
+        (acc, e) => {
+          acc[e.estado] = (acc[e.estado] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
+      // Remove raw entradas array, keep only stats
+      const { entradas: _, ...eventoSinEntradas } = evento;
+
+      return {
+        ...eventoSinEntradas,
+        stats: {
+          total: evento._count.entradas,
+          pendientes: estadoCounts.PENDIENTE || 0,
+          enviadas: estadoCounts.ENVIADO || 0,
+          ingresadas: estadoCounts.INGRESADO || 0,
+          invalidadas: estadoCounts.INVALIDADO || 0,
+        },
+      };
     });
 
-    return successResponse(eventos);
+    return successResponse({
+      eventos: eventosConStats,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }

@@ -12,7 +12,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("ADMIN", "PORTERO");
+    const session = await requireRole("ADMIN", "PORTERO");
     const { id } = await params;
 
     // Buscar entrada por qrCode o por id
@@ -55,6 +55,7 @@ export async function POST(
       data: {
         estado: "INGRESADO",
         fechaIngreso: new Date(),
+        validadoPorId: session.user.id,
       },
       include: {
         evento: { select: { nombre: true } },

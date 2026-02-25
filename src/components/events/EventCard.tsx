@@ -10,6 +10,8 @@ interface EventCardProps {
   type: "normal" | "especial";
   capacity: number;
   ticketsSold: number;
+  ingresados?: number;
+  isPast?: boolean;
   flyerUrl?: string;
   onClick?: () => void;
   className?: string;
@@ -22,13 +24,21 @@ export function EventCard({
   type,
   capacity,
   ticketsSold,
+  ingresados,
+  isPast,
   flyerUrl,
   onClick,
   className,
 }: EventCardProps) {
-  const percentage = Math.round((ticketsSold / capacity) * 100);
-  const barColor =
-    percentage >= 90
+  // For past events: show attendance (ingresados/ticketsSold)
+  // For upcoming: show sold (ticketsSold/capacity)
+  const barValue = isPast ? (ingresados ?? 0) : ticketsSold;
+  const barMax = isPast ? ticketsSold || 1 : capacity;
+  const percentage = Math.round((barValue / barMax) * 100);
+
+  const barColor = isPast
+    ? "bg-gold-500"
+    : percentage >= 90
       ? "bg-error"
       : percentage >= 70
         ? "bg-warning"
@@ -40,15 +50,21 @@ export function EventCard({
       className={cn(
         "glass-card-hover relative overflow-hidden flex gap-4",
         type === "especial" && "border-l-[3px] border-l-gold-500",
+        isPast && "opacity-80",
         onClick && "cursor-pointer",
         className
       )}
     >
       <div className="flex-1 flex flex-col gap-3 p-4">
-        {/* Type badge */}
-        <Badge variant={type === "especial" ? "especial" : "normal"}>
-          {type.toUpperCase()}
-        </Badge>
+        {/* Badges */}
+        <div className="flex items-center gap-2">
+          <Badge variant={type === "especial" ? "especial" : "normal"}>
+            {type.toUpperCase()}
+          </Badge>
+          {isPast && (
+            <Badge variant="invalidado">FINALIZADO</Badge>
+          )}
+        </div>
 
         {/* Event info */}
         <div>
@@ -57,23 +73,36 @@ export function EventCard({
           <p className="text-xs text-dark-400 mt-0.5">Apertura: {time}</p>
         </div>
 
-        {/* Capacity bar */}
+        {/* Bar */}
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between text-xs">
-            <span className="text-dark-400">
-              {ticketsSold} / {capacity}
-            </span>
-            <span
-              className={cn(
-                percentage >= 90
-                  ? "text-error"
-                  : percentage >= 70
-                    ? "text-warning"
-                    : "text-dark-400"
-              )}
-            >
-              {percentage}%
-            </span>
+            {isPast ? (
+              <>
+                <span className="text-dark-400">
+                  Asistencia: {ingresados ?? 0} / {ticketsSold}
+                </span>
+                <span className="text-gold-500 font-medium">
+                  {ticketsSold > 0 ? percentage : 0}%
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-dark-400">
+                  {ticketsSold} / {capacity}
+                </span>
+                <span
+                  className={cn(
+                    percentage >= 90
+                      ? "text-error"
+                      : percentage >= 70
+                        ? "text-warning"
+                        : "text-dark-400"
+                  )}
+                >
+                  {percentage}%
+                </span>
+              </>
+            )}
           </div>
           <div className="h-1.5 w-full rounded-full bg-dark-700 overflow-hidden">
             <div

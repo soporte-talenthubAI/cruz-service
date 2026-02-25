@@ -1,14 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Ticket, Search } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Search, Ticket } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
+import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+
+interface Evento {
+  id: string;
+  nombre: string;
+  fecha: string;
+  horaApertura: string;
+  tipo: string;
+  capacidad: number;
+  stats: {
+    total: number;
+    pendientes: number;
+    enviadas: number;
+    ingresadas: number;
+    invalidadas: number;
+  };
+}
 
 interface Entrada {
   id: string;
@@ -29,7 +47,11 @@ const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "inv
   INVALIDADO: "invalidado",
 };
 
-export default function MisQRsPage() {
+export default function EventoDetallePage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+
+  const [evento, setEvento] = useState<Evento | null>(null);
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -45,6 +67,7 @@ export default function MisQRsPage() {
 
     try {
       const params = new URLSearchParams({
+        eventoId: id,
         page: String(pageNum),
         limit: "20",
       });
@@ -70,9 +93,22 @@ export default function MisQRsPage() {
     }
   };
 
+  const fetchEvento = async () => {
+    try {
+      const res = await fetch(`/api/eventos?status=all&limit=50`);
+      const json = await res.json();
+      if (res.ok) {
+        const found = (json.data.eventos || []).find((e: Evento) => e.id === id);
+        if (found) setEvento(found);
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
   useEffect(() => {
     async function init() {
-      await fetchEntradas(1);
+      await Promise.all([fetchEvento(), fetchEntradas(1)]);
       setLoading(false);
     }
     init();
@@ -94,12 +130,33 @@ export default function MisQRsPage() {
 
   if (loading) return <Spinner fullscreen />;
 
+  const isPast = evento ? new Date(evento.fecha) < new Date() : false;
+
   return (
     <div className="space-y-4 animate-fade-in">
+      <Button
+        variant="ghost"
+        size="sm"
+        leftIcon={<ArrowLeft size={16} />}
+        onClick={() => router.push("/eventos")}
+      >
+        Eventos
+      </Button>
+
       <PageHeader
-        title="Mis Entradas"
-        subtitle={`${total} entrada${total !== 1 ? "s" : ""} generada${total !== 1 ? "s" : ""}`}
+        title={evento?.nombre || "Evento"}
+        subtitle={evento ? `${new Date(evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })} — ${evento.horaApertura}` : ""}
       />
+
+      {/* Event stats */}
+      {evento && (
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard value={evento.stats.total} label="Entradas totales" icon={<Ticket />} />
+          <StatCard value={evento.stats.ingresadas} label="Ingresadas" />
+          <StatCard value={evento.stats.enviadas} label="Enviadas" />
+          <StatCard value={evento.stats.pendientes} label="Pendientes" />
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">
@@ -113,7 +170,7 @@ export default function MisQRsPage() {
         />
       </div>
 
-      {/* Filters */}
+      {/* Status filters */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {["", "PENDIENTE", "ENVIADO", "INGRESADO", "INVALIDADO"].map((estado) => (
           <button
@@ -125,12 +182,12 @@ export default function MisQRsPage() {
                 : "bg-surface-2 text-dark-400 border border-transparent"
             }`}
           >
-            {estado || "Todas"}
+            {estado || `Todas (${total})`}
           </button>
         ))}
       </div>
 
-      {/* List */}
+      {/* Entries list */}
       {entradas.length > 0 ? (
         <div className="space-y-2">
           {entradas.map((entrada) => (
@@ -142,7 +199,7 @@ export default function MisQRsPage() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-dark-100 truncate">{entrada.nombreInvitado}</p>
                 <p className="text-xs text-dark-400">DNI: {entrada.dniInvitado}</p>
-                <p className="text-xs text-dark-500 mt-0.5">{entrada.evento.nombre}</p>
+                <p className="text-xs text-dark-500 mt-0.5">{entrada.generadoPor.nombre}</p>
               </div>
               <Badge variant={estadoVariant[entrada.estado]}>
                 {entrada.estado}
@@ -165,13 +222,13 @@ export default function MisQRsPage() {
       ) : (
         <EmptyState
           icon={<Ticket />}
-          title={filtroEstado || searchQuery ? "Sin resultados" : "Sin entradas"}
-          description={filtroEstado || searchQuery ? "No hay entradas con esos filtros" : "Generá tu primera entrada desde Nuevo QR"}
+          title="Sin entradas"
+          description={searchQuery || filtroEstado ? "No hay entradas con esos filtros" : "No se generaron entradas para este evento"}
         />
       )}
 
       {/* Detail modal */}
-      <Modal open={!!selected} onClose={() => setSelected(null)} title="Detalle">
+      <Modal open={!!selected} onClose={() => setSelected(null)} title="Detalle de entrada">
         {selected && (
           <QRDisplay
             eventName={selected.evento.nombre}
