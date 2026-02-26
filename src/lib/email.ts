@@ -84,8 +84,7 @@ function buildEntradaEmailHtml(
 
       <!-- Datos del invitado -->
       <div style="margin-top:24px;text-align:center;">
-        <p style="font-size:20px;font-weight:700;color:#fff;margin:0;">${data.nombreInvitado}</p>
-        <p style="font-size:13px;color:#707070;margin:4px 0 0;">DNI: ${data.dniInvitado}</p>
+        <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">DNI: ${data.dniInvitado}</p>
       </div>
 
       <!-- Info del evento -->

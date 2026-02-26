@@ -10,7 +10,9 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
+    const userRole = (session.user as { role: string }).role;
+    const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "all"; // upcoming | past | all
@@ -30,7 +32,11 @@ export async function GET(request: NextRequest) {
     } else if (status === "past") {
       where.fecha = { lt: today };
     }
-    // "all" → no date filter
+
+    // RRPP solo ve eventos asignados
+    if (userRole === "RRPP") {
+      where.rrppAsignados = { some: { usuarioId: userId } };
+    }
 
     const orderBy = status === "upcoming"
       ? { fecha: "asc" as const }
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
     await requireRole("ADMIN");
 
     const body = await request.json();
-    const { nombre, fecha, horaApertura, tipo, capacidad, flyerUrl } = body;
+    const { nombre, fecha, horaApertura, tipo, capacidad, flyerUrl, rrppAsignados } = body;
 
     if (!nombre || !fecha || !horaApertura || !capacidad) {
       return errorResponse("Faltan campos obligatorios");
@@ -112,6 +118,17 @@ export async function POST(request: NextRequest) {
         flyerUrl,
       },
     });
+
+    // Assign RRPP if provided
+    if (rrppAsignados && Array.isArray(rrppAsignados) && rrppAsignados.length > 0) {
+      await prisma.eventoUsuario.createMany({
+        data: rrppAsignados.map((asignado: { usuarioId: string; montoPorQr?: number }) => ({
+          eventoId: evento.id,
+          usuarioId: asignado.usuarioId,
+          montoPorQr: asignado.montoPorQr || 0,
+        })),
+      });
+    }
 
     return successResponse(evento, 201);
   } catch (error) {

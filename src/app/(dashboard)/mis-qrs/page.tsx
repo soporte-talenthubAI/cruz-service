@@ -204,7 +204,6 @@ export default function MisQRsPage() {
             eventName={selected.evento.nombre}
             eventDate={new Date(selected.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
             eventTime={selected.evento.horaApertura || ""}
-            guestName={selected.nombreInvitado}
             guestDni={selected.dniInvitado}
             guestEmail={selected.emailInvitado}
             generatedBy={selected.generadoPor.nombre}

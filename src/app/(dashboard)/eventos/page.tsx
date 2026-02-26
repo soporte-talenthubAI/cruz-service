@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Check } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -32,6 +32,17 @@ interface Evento {
   stats: EventoStats;
 }
 
+interface RrppOption {
+  id: string;
+  nombre: string;
+  email: string;
+}
+
+interface RrppAsignado {
+  usuarioId: string;
+  montoPorQr: number;
+}
+
 type Tab = "upcoming" | "past";
 
 export default function EventosPage() {
@@ -52,6 +63,10 @@ export default function EventosPage() {
   const [horaApertura, setHoraApertura] = useState("");
   const [tipo, setTipo] = useState<"NORMAL" | "ESPECIAL">("NORMAL");
   const [capacidad, setCapacidad] = useState("");
+
+  // RRPP assignment
+  const [rrppList, setRrppList] = useState<RrppOption[]>([]);
+  const [rrppAsignados, setRrppAsignados] = useState<RrppAsignado[]>([]);
 
   const fetchEventos = async (pageNum: number, append = false) => {
     if (append) setLoadingMore(true);
@@ -77,6 +92,16 @@ export default function EventosPage() {
     }
   };
 
+  const fetchRrpp = async () => {
+    try {
+      const res = await fetch("/api/usuarios/rrpp");
+      const json = await res.json();
+      if (res.ok) setRrppList(json.data || []);
+    } catch {
+      // silently fail
+    }
+  };
+
   useEffect(() => {
     setPage(1);
     setEventos([]);
@@ -88,6 +113,26 @@ export default function EventosPage() {
     const next = page + 1;
     setPage(next);
     fetchEventos(next, true);
+  };
+
+  const openModal = () => {
+    setShowModal(true);
+    setError("");
+    fetchRrpp();
+  };
+
+  const toggleRrpp = (id: string) => {
+    setRrppAsignados((prev) => {
+      const exists = prev.find((r) => r.usuarioId === id);
+      if (exists) return prev.filter((r) => r.usuarioId !== id);
+      return [...prev, { usuarioId: id, montoPorQr: 0 }];
+    });
+  };
+
+  const updateMonto = (usuarioId: string, monto: number) => {
+    setRrppAsignados((prev) =>
+      prev.map((r) => (r.usuarioId === usuarioId ? { ...r, montoPorQr: monto } : r))
+    );
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -105,6 +150,7 @@ export default function EventosPage() {
           horaApertura,
           tipo,
           capacidad: Number(capacidad),
+          rrppAsignados,
         }),
       });
 
@@ -120,6 +166,7 @@ export default function EventosPage() {
       setHoraApertura("");
       setTipo("NORMAL");
       setCapacidad("");
+      setRrppAsignados([]);
       setPage(1);
       fetchEventos(1);
     } catch {
@@ -142,7 +189,7 @@ export default function EventosPage() {
             variant="gold"
             size="sm"
             leftIcon={<Plus size={16} />}
-            onClick={() => setShowModal(true)}
+            onClick={openModal}
           >
             Nuevo
           </Button>
@@ -203,7 +250,7 @@ export default function EventosPage() {
           title={isPast ? "Sin eventos pasados" : "Sin eventos próximos"}
           description={isPast ? "No hay eventos finalizados" : "Creá tu primer evento"}
           actionLabel={isPast ? undefined : "Crear evento"}
-          onAction={isPast ? undefined : () => setShowModal(true)}
+          onAction={isPast ? undefined : openModal}
         />
       )}
 
@@ -269,6 +316,58 @@ export default function EventosPage() {
               </button>
             </div>
           </div>
+
+          {/* RRPP Assignment */}
+          {rrppList.length > 0 && (
+            <div>
+              <label className="text-sm text-dark-300 mb-2 block">
+                Asignar RRPP ({rrppAsignados.length} seleccionado{rrppAsignados.length !== 1 ? "s" : ""})
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {rrppList.map((rrpp) => {
+                  const isSelected = rrppAsignados.some((r) => r.usuarioId === rrpp.id);
+                  const asignado = rrppAsignados.find((r) => r.usuarioId === rrpp.id);
+                  return (
+                    <div key={rrpp.id} className="space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleRrpp(rrpp.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${
+                          isSelected
+                            ? "bg-gold-500/10 border border-gold-500/30"
+                            : "bg-surface-2 border border-transparent hover:border-dark-700"
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? "bg-gold-500 text-black" : "bg-dark-700 border border-dark-600"
+                          }`}
+                        >
+                          {isSelected && <Check size={14} />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-dark-200 truncate">{rrpp.nombre}</p>
+                          <p className="text-xs text-dark-500 truncate">{rrpp.email}</p>
+                        </div>
+                      </button>
+                      {isSelected && (
+                        <div className="pl-8">
+                          <Input
+                            label="Monto por QR ($)"
+                            type="number"
+                            step="0.01"
+                            value={asignado?.montoPorQr?.toString() || "0"}
+                            onChange={(e) => updateMonto(rrpp.id, Number(e.target.value) || 0)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <Button type="submit" variant="gold" size="lg" loading={creating} className="w-full mt-2">
             Crear evento
           </Button>

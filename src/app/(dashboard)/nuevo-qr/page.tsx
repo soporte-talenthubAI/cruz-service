@@ -109,7 +109,6 @@ export default function NuevoQRPage() {
           eventName={entradaCreada.evento.nombre}
           eventDate={new Date(entradaCreada.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
           eventTime={entradaCreada.evento.horaApertura || ""}
-          guestName={entradaCreada.nombreInvitado}
           guestDni={entradaCreada.dniInvitado}
           guestEmail={entradaCreada.emailInvitado}
           generatedBy={entradaCreada.generadoPor.nombre}

@@ -87,6 +87,17 @@ export async function POST(request: NextRequest) {
       return errorResponse("Evento no encontrado o inactivo", 404);
     }
 
+    // RRPP must be assigned to the event
+    const userRole = (session.user as { role: string }).role;
+    if (userRole === "RRPP") {
+      const isAssigned = await prisma.eventoUsuario.findUnique({
+        where: { eventoId_usuarioId: { eventoId, usuarioId: session.user.id } },
+      });
+      if (!isAssigned) {
+        return errorResponse("No tenés acceso a este evento", 403);
+      }
+    }
+
     // Verificar capacidad
     if (evento._count.entradas >= evento.capacidad) {
       return errorResponse("El evento está lleno");

@@ -29,8 +29,8 @@ const navItems: Record<UserRole, NavItem[]> = {
   admin: [
     { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={22} /> },
     { href: "/eventos", label: "Eventos", icon: <Calendar size={22} /> },
+    { href: "/nuevo-qr", label: "Nuevo QR", icon: <QrCode size={22} />, central: true },
     { href: "/publicas", label: "Publicas", icon: <Users size={22} /> },
-    { href: "/scanner", label: "Scanner", icon: <ScanLine size={22} /> },
     { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
   ],
   rrpp: [

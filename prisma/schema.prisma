@@ -35,9 +35,10 @@ model Usuario {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  entradas     Entrada[]    @relation("GeneradaPor")
-  validaciones Entrada[]    @relation("ValidadaPor")
-  resetTokens  ResetToken[]
+  entradas         Entrada[]        @relation("GeneradaPor")
+  validaciones     Entrada[]        @relation("ValidadaPor")
+  resetTokens      ResetToken[]
+  eventosAsignados EventoUsuario[]
 }
 
 model ResetToken {
@@ -63,7 +64,27 @@ model Evento {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  entradas Entrada[]
+  brandingBgUrl        String?
+  brandingColorPrimary String?  @default("#C5A059")
+  brandingColorText    String?  @default("#FFFFFF")
+
+  entradas      Entrada[]
+  rrppAsignados EventoUsuario[]
+}
+
+model EventoUsuario {
+  id         String   @id @default(cuid())
+  eventoId   String
+  usuarioId  String
+  montoPorQr Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  evento  Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([eventoId, usuarioId])
+  @@index([usuarioId])
+  @@index([eventoId])
 }
 
 model Entrada {

@@ -13,9 +13,9 @@ interface QRDisplayProps {
   eventName: string;
   eventDate: string;
   eventTime: string;
-  guestName: string;
+  guestName?: string;
   guestDni: string;
-  guestEmail: string;
+  guestEmail?: string;
   generatedBy: string;
   ticketId: string;
   qrCode: string;
@@ -28,7 +28,6 @@ export function QRDisplay({
   eventName,
   eventDate,
   eventTime,
-  guestName,
   guestDni,
   guestEmail,
   generatedBy,
@@ -48,7 +47,6 @@ export function QRDisplay({
   const handleDownload = useCallback(async () => {
     if (!cardRef.current) return;
 
-    // Dynamic import to avoid SSR issues
     const html2canvas = (await import("html2canvas-pro")).default;
 
     const canvas = await html2canvas(cardRef.current, {
@@ -58,10 +56,10 @@ export function QRDisplay({
     });
 
     const link = document.createElement("a");
-    link.download = `entrada-${guestName.replace(/\s+/g, "-").toLowerCase()}-${ticketId.slice(0, 8)}.png`;
+    link.download = `entrada-${guestDni}-${ticketId.slice(0, 8)}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
-  }, [guestName, ticketId]);
+  }, [guestDni, ticketId]);
 
   const handleSendEmail = useCallback(async () => {
     if (!onSendEmail) return;
@@ -142,18 +140,17 @@ export function QRDisplay({
           <div className="bg-white rounded-2xl p-4">
             <img
               src={qrImageUrl}
-              alt={`QR de ${guestName}`}
+              alt="QR de entrada"
               className="h-48 w-48 object-contain"
               crossOrigin="anonymous"
             />
           </div>
         </div>
 
-        {/* Guest info */}
+        {/* Guest info — only DNI and generator */}
         <div className="px-5 pb-2 bg-surface-1">
-          <p className="text-xl font-bold text-dark-50">{guestName}</p>
-          <p className="text-sm text-dark-400">DNI: {guestDni}</p>
-          <p className="text-sm text-dark-500">{guestEmail}</p>
+          <p className="text-lg font-bold text-dark-50">DNI: {guestDni}</p>
+          {guestEmail && <p className="text-sm text-dark-500">{guestEmail}</p>}
         </div>
 
         {/* Footer */}

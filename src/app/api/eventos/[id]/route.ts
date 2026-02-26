@@ -23,6 +23,11 @@ export async function GET(_request: NextRequest, { params }: Params) {
           include: { generadoPor: { select: { nombre: true } } },
         },
         _count: { select: { entradas: true } },
+        rrppAsignados: {
+          include: {
+            usuario: { select: { id: true, nombre: true, email: true } },
+          },
+        },
       },
     });
 
@@ -40,10 +45,37 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const { id } = await params;
     const body = await request.json();
 
+    // Whitelist allowed fields
+    const { rrppAsignados, ...rest } = body;
+    const allowed: Record<string, unknown> = {};
+    const allowedFields = [
+      "nombre", "fecha", "horaApertura", "tipo", "capacidad",
+      "flyerUrl", "activo", "brandingBgUrl", "brandingColorPrimary", "brandingColorText",
+    ];
+    for (const key of allowedFields) {
+      if (rest[key] !== undefined) {
+        allowed[key] = key === "fecha" ? new Date(rest[key]) : rest[key];
+      }
+    }
+
     const evento = await prisma.evento.update({
       where: { id },
-      data: body,
+      data: allowed,
     });
+
+    // Update RRPP assignments if provided
+    if (rrppAsignados && Array.isArray(rrppAsignados)) {
+      await prisma.$transaction([
+        prisma.eventoUsuario.deleteMany({ where: { eventoId: id } }),
+        prisma.eventoUsuario.createMany({
+          data: rrppAsignados.map((a: { usuarioId: string; montoPorQr?: number }) => ({
+            eventoId: id,
+            usuarioId: a.usuarioId,
+            montoPorQr: a.montoPorQr || 0,
+          })),
+        }),
+      ]);
+    }
 
     return successResponse(evento);
   } catch (error) {
