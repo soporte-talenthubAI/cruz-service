@@ -25,7 +25,7 @@ interface EntradaCreada {
   emailInvitado: string;
   qrCode: string;
   estado: string;
-  evento: { nombre: string; fecha: string; horaApertura: string };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
   generadoPor: { nombre: string };
 }
 
@@ -115,6 +115,9 @@ export default function NuevoQRPage() {
           ticketId={entradaCreada.id}
           qrCode={entradaCreada.qrCode}
           status={entradaCreada.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}
+          brandingBgUrl={entradaCreada.evento.brandingBgUrl}
+          brandingColorPrimary={entradaCreada.evento.brandingColorPrimary}
+          brandingColorText={entradaCreada.evento.brandingColorText}
           onSendEmail={async () => {
             await fetch(`/api/entradas/${entradaCreada.id}/enviar`, { method: "POST" });
           }}

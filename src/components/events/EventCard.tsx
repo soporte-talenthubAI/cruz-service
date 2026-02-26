@@ -89,6 +89,9 @@ export function EventCard({
               <>
                 <span className="text-dark-400">
                   {ticketsSold} / {capacity}
+                  {ingresados != null && ingresados > 0 && (
+                    <span className="text-success ml-2">({ingresados} ingresados)</span>
+                  )}
                 </span>
                 <span
                   className={cn(

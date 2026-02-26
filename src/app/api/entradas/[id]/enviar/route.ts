@@ -51,6 +51,9 @@ export async function POST(
       qrCode: entrada.qrCode,
       ticketId: entrada.id,
       generadoPor: entrada.generadoPor.nombre,
+      brandingBgUrl: entrada.evento.brandingBgUrl || undefined,
+      brandingColorPrimary: entrada.evento.brandingColorPrimary || undefined,
+      brandingColorText: entrada.evento.brandingColorText || undefined,
     });
 
     // Update entrada status and email tracking

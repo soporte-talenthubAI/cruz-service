@@ -64,6 +64,15 @@ export default function EventosPage() {
   const [tipo, setTipo] = useState<"NORMAL" | "ESPECIAL">("NORMAL");
   const [capacidad, setCapacidad] = useState("");
 
+  // Branding
+  const [brandingBgUrl, setBrandingBgUrl] = useState("");
+  const [brandingColorPrimary, setBrandingColorPrimary] = useState("#C5A059");
+  const [brandingColorText, setBrandingColorText] = useState("#FFFFFF");
+  const [uploading, setUploading] = useState(false);
+
+  // Branding gallery
+  const [brandingGallery, setBrandingGallery] = useState<{ url: string; usedIn: string }[]>([]);
+
   // RRPP assignment
   const [rrppList, setRrppList] = useState<RrppOption[]>([]);
   const [rrppAsignados, setRrppAsignados] = useState<RrppAsignado[]>([]);
@@ -115,10 +124,37 @@ export default function EventosPage() {
     fetchEventos(next, true);
   };
 
+  const handleUploadBranding = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (res.ok) setBrandingBgUrl(json.data.url);
+      else setError(json.error || "Error al subir imagen");
+    } catch {
+      setError("Error al subir imagen");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const fetchBrandingGallery = async () => {
+    try {
+      const res = await fetch("/api/branding");
+      const json = await res.json();
+      if (res.ok) setBrandingGallery(json.data || []);
+    } catch {
+      // silently fail
+    }
+  };
+
   const openModal = () => {
     setShowModal(true);
     setError("");
     fetchRrpp();
+    fetchBrandingGallery();
   };
 
   const toggleRrpp = (id: string) => {
@@ -151,6 +187,9 @@ export default function EventosPage() {
           tipo,
           capacidad: Number(capacidad),
           rrppAsignados,
+          brandingBgUrl: brandingBgUrl || undefined,
+          brandingColorPrimary: brandingColorPrimary !== "#C5A059" ? brandingColorPrimary : undefined,
+          brandingColorText: brandingColorText !== "#FFFFFF" ? brandingColorText : undefined,
         }),
       });
 
@@ -167,6 +206,9 @@ export default function EventosPage() {
       setTipo("NORMAL");
       setCapacidad("");
       setRrppAsignados([]);
+      setBrandingBgUrl("");
+      setBrandingColorPrimary("#C5A059");
+      setBrandingColorText("#FFFFFF");
       setPage(1);
       fetchEventos(1);
     } catch {
@@ -314,6 +356,102 @@ export default function EventosPage() {
               >
                 Especial
               </button>
+            </div>
+          </div>
+
+          {/* Branding */}
+          <div>
+            <label className="text-sm text-dark-300 mb-2 block">Branding de entrada</label>
+            <div className="space-y-3">
+              {/* Gallery of existing images */}
+              {brandingGallery.length > 0 && !brandingBgUrl && (
+                <div>
+                  <label className="text-xs text-dark-400 mb-1.5 block">Imágenes anteriores</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {brandingGallery.map((img) => (
+                      <button
+                        key={img.url}
+                        type="button"
+                        onClick={() => setBrandingBgUrl(img.url)}
+                        className="relative rounded-xl overflow-hidden h-16 border border-transparent hover:border-gold-500/50 transition-colors group"
+                      >
+                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-[10px] text-white font-medium">Usar</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Image upload */}
+              <div>
+                <label className="text-xs text-dark-400 mb-1 block">
+                  {brandingGallery.length > 0 && !brandingBgUrl ? "O subir nueva imagen" : "Imagen de fondo"}
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-colors ${
+                    brandingBgUrl
+                      ? "border-gold-500/40 bg-gold-500/5"
+                      : "border-dark-600 hover:border-dark-500 bg-surface-2"
+                  }`}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUploadBranding(file);
+                      }}
+                    />
+                    <span className="text-xs text-dark-400">
+                      {uploading ? "Subiendo..." : brandingBgUrl ? "Imagen cargada" : "Subir imagen"}
+                    </span>
+                  </label>
+                  {brandingBgUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setBrandingBgUrl("")}
+                      className="text-xs text-error hover:text-error/80"
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </div>
+                {brandingBgUrl && (
+                  <div className="mt-2 rounded-xl overflow-hidden h-20">
+                    <img src={brandingBgUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+              {/* Color pickers */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-dark-400 mb-1 block">Color primario</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={brandingColorPrimary}
+                      onChange={(e) => setBrandingColorPrimary(e.target.value)}
+                      className="w-8 h-8 rounded-lg border-0 cursor-pointer bg-transparent"
+                    />
+                    <span className="text-xs text-dark-500 font-mono">{brandingColorPrimary}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-dark-400 mb-1 block">Color texto</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={brandingColorText}
+                      onChange={(e) => setBrandingColorText(e.target.value)}
+                      className="w-8 h-8 rounded-lg border-0 cursor-pointer bg-transparent"
+                    />
+                    <span className="text-xs text-dark-500 font-mono">{brandingColorText}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

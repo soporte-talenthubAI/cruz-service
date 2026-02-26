@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Search, Ticket, Users, Check, DollarSign } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -55,7 +55,7 @@ interface Entrada {
   estado: "PENDIENTE" | "ENVIADO" | "INGRESADO" | "INVALIDADO";
   qrCode: string;
   createdAt: string;
-  evento: { nombre: string; fecha: string; horaApertura: string };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
   generadoPor: { nombre: string };
 }
 
@@ -148,12 +148,23 @@ export default function EventoDetallePage() {
     }
   };
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     async function init() {
       await Promise.all([fetchEventoDetalle(), fetchEventoStats(), fetchEntradas(1)]);
       setLoading(false);
     }
     init();
+
+    // Auto-refresh stats every 30s for active events
+    intervalRef.current = setInterval(() => {
+      fetchEventoStats();
+      fetchEntradas(1);
+    }, 30000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -254,6 +265,31 @@ export default function EventoDetallePage() {
         </div>
       )}
 
+      {/* Capacity progress bar */}
+      {evento && eventoDetalle && (() => {
+        const cap = eventoDetalle.capacidad;
+        const pct = cap > 0 ? Math.round((evento.stats.ingresadas / cap) * 100) : 0;
+        return (
+          <div className="glass-card p-4">
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-dark-400">Capacidad</span>
+              <span className="text-dark-200 font-medium">
+                {evento.stats.ingresadas}/{cap}
+                <span className="text-dark-500 ml-1">({pct}%)</span>
+              </span>
+            </div>
+            <div className="h-2 bg-dark-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  pct >= 90 ? "bg-error" : pct >= 70 ? "bg-warning" : "bg-gradient-to-r from-gold-600 to-gold-400"
+                }`}
+                style={{ width: `${Math.min(pct, 100)}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
+
       {/* RRPP Asignados */}
       <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
@@ -283,6 +319,15 @@ export default function EventoDetallePage() {
         ) : (
           <p className="text-xs text-dark-500">No hay RRPP asignados a este evento</p>
         )}
+        <Button
+          variant="gold"
+          size="sm"
+          className="w-full mt-3"
+          leftIcon={<DollarSign size={14} />}
+          onClick={() => router.push(`/liquidaciones?eventoId=${id}`)}
+        >
+          Ver liquidaciones
+        </Button>
       </div>
 
       {/* Search */}
@@ -367,6 +412,9 @@ export default function EventoDetallePage() {
             ticketId={selected.id}
             qrCode={selected.qrCode}
             status={selected.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}
+            brandingBgUrl={selected.evento.brandingBgUrl}
+            brandingColorPrimary={selected.evento.brandingColorPrimary}
+            brandingColorText={selected.evento.brandingColorText}
             onSendEmail={async () => {
               await fetch(`/api/entradas/${selected.id}/enviar`, { method: "POST" });
               setSelected(null);

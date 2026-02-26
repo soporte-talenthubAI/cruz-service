@@ -31,12 +31,15 @@ interface EntradaEmailData {
   qrCode: string;
   ticketId: string;
   generadoPor: string;
+  brandingBgUrl?: string;
+  brandingColorPrimary?: string;
+  brandingColorText?: string;
 }
 
 export async function sendEntradaEmail(data: EntradaEmailData) {
   const resend = getResend();
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qrCode)}&bgcolor=FFFFFF&color=000000`;
-  const bgImageUrl = `${APP_URL}/images/cruz_espacio.jpg`;
+  const bgImageUrl = data.brandingBgUrl || `${APP_URL}/images/cruz_espacio.jpg`;
 
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
@@ -58,6 +61,9 @@ function buildEntradaEmailHtml(
   qrImageUrl: string,
   bgImageUrl: string
 ): string {
+  const accentColor = data.brandingColorPrimary || "#C5A059";
+  const textColor = data.brandingColorText || "#FFFFFF";
+
   return `
 <!DOCTYPE html>
 <html>
@@ -66,15 +72,15 @@ function buildEntradaEmailHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="margin:0;padding:0;background-color:#000;font-family:Arial,sans-serif;">
-  <div style="background-color:#000;color:#fff;max-width:600px;margin:auto;border:1px solid #333;">
+  <div style="background-color:#000;color:${textColor};max-width:600px;margin:auto;border:1px solid #333;">
 
-    <!-- Header con imagen de fondo CRUZ ESPACIO -->
+    <!-- Header con imagen de fondo -->
     <div style="background-image:url('${bgImageUrl}');background-size:cover;background-position:center;padding:60px 20px;text-align:center;">
     </div>
 
     <!-- Contenido -->
     <div style="padding:40px;text-align:center;">
-      <h1 style="color:#C5A059;font-weight:300;letter-spacing:2px;margin:0 0 8px;">TU ENTRADA</h1>
+      <h1 style="color:${accentColor};font-weight:300;letter-spacing:2px;margin:0 0 8px;">TU ENTRADA</h1>
       <p style="color:#aaa;margin:0 0 4px;font-size:14px;">Presentá este código en la entrada junto a tu DNI.</p>
 
       <!-- QR Code -->
@@ -84,13 +90,13 @@ function buildEntradaEmailHtml(
 
       <!-- Datos del invitado -->
       <div style="margin-top:24px;text-align:center;">
-        <p style="font-size:18px;font-weight:700;color:#fff;margin:0;">DNI: ${data.dniInvitado}</p>
+        <p style="font-size:18px;font-weight:700;color:${textColor};margin:0;">DNI: ${data.dniInvitado}</p>
       </div>
 
       <!-- Info del evento -->
       <div style="margin-top:30px;border-top:1px solid #222;padding-top:20px;text-align:center;">
-        <p style="color:#fff;margin:0 0 8px;font-size:14px;"><strong>Evento:</strong> ${data.eventoNombre}</p>
-        <p style="color:#fff;margin:0;font-size:14px;"><strong>Fecha:</strong> ${data.eventoFecha} — ${data.eventoHora}</p>
+        <p style="color:${textColor};margin:0 0 8px;font-size:14px;"><strong>Evento:</strong> ${data.eventoNombre}</p>
+        <p style="color:${textColor};margin:0;font-size:14px;"><strong>Fecha:</strong> ${data.eventoFecha} — ${data.eventoHora}</p>
       </div>
 
       <!-- Footer -->

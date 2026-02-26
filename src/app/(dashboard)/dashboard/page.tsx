@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Ticket, Users, Calendar, QrCode, ScanLine, Clock, Shield, UserPlus } from "lucide-react";
+import { Ticket, Users, Calendar, QrCode, ScanLine, Clock, Shield, UserPlus, DollarSign } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
 import { EventCard } from "@/components/events/EventCard";
 import { Spinner } from "@/components/ui/Spinner";
@@ -68,26 +68,33 @@ function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [statsRes, eventosRes] = await Promise.all([
+        fetch("/api/stats"),
+        fetch("/api/eventos?status=upcoming&limit=5"),
+      ]);
+      const statsData = await statsRes.json();
+      const eventosData = await eventosRes.json();
+      if (statsRes.ok) setStats(statsData.data);
+      if (eventosRes.ok) setEventos(eventosData.data?.eventos || []);
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [statsRes, eventosRes] = await Promise.all([
-          fetch("/api/stats"),
-          fetch("/api/eventos?status=upcoming&limit=3"),
-        ]);
-        const statsData = await statsRes.json();
-        const eventosData = await eventosRes.json();
-        if (statsRes.ok) setStats(statsData.data);
-        if (eventosRes.ok) setEventos(eventosData.data?.eventos || []);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
-  }, []);
+    // Auto-refresh every 30 seconds
+    intervalRef.current = setInterval(fetchData, 30000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [fetchData]);
 
   if (loading) return <Spinner fullscreen />;
 
@@ -118,15 +125,66 @@ function AdminDashboard() {
         />
       </div>
 
-      <Button
-        variant="surface"
-        size="md"
-        className="w-full"
-        leftIcon={<UserPlus size={18} />}
-        onClick={() => router.push("/usuarios")}
-      >
-        Gestionar equipo
-      </Button>
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          variant="surface"
+          size="md"
+          className="w-full"
+          leftIcon={<UserPlus size={18} />}
+          onClick={() => router.push("/usuarios")}
+        >
+          Equipo
+        </Button>
+        <Button
+          variant="surface"
+          size="md"
+          className="w-full"
+          leftIcon={<DollarSign size={18} />}
+          onClick={() => router.push("/liquidaciones")}
+        >
+          Liquidaciones
+        </Button>
+      </div>
+
+      {/* Evento en curso — shows the closest upcoming event with capacity progress */}
+      {eventos.length > 0 && (() => {
+        const ev = eventos[0];
+        const pct = ev.capacidad > 0 ? Math.round((ev.stats.ingresadas / ev.capacidad) * 100) : 0;
+        return (
+          <div className="glass-card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-dark-300">Evento en curso</h3>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-success/20 text-success">
+                EN VIVO
+              </span>
+            </div>
+            <div>
+              <p className="text-base font-semibold text-dark-100">{ev.nombre}</p>
+              <p className="text-xs text-dark-400 mt-0.5">
+                {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {ev.horaApertura}
+              </p>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-dark-400">Ingresados / Capacidad</span>
+                <span className="text-dark-200 font-medium">
+                  {ev.stats.ingresadas}/{ev.capacidad}
+                  <span className="text-dark-500 ml-1">({pct}%)</span>
+                </span>
+              </div>
+              <div className="h-2 bg-dark-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-gold-600 to-gold-400 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(pct, 100)}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-dark-500 mt-1">
+                {ev.stats.total} entradas generadas — {ev.stats.total - ev.stats.ingresadas} sin ingresar
+              </p>
+            </div>
+          </div>
+        );
+      })()}
 
       {stats && (
         <div className="glass-card p-4">
@@ -165,7 +223,9 @@ function AdminDashboard() {
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}
                 ticketsSold={e.stats.total}
+                ingresados={e.stats.ingresadas}
                 flyerUrl={e.flyerUrl}
+                onClick={() => router.push(`/eventos/${e.id}`)}
               />
             ))}
           </div>

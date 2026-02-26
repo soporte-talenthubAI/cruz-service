@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search } from "lucide-react";
+import { Search, FileSpreadsheet, FileText } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+import { exportEntradasToExcel, exportEntradasToPdf } from "@/lib/export";
 
 interface Entrada {
   id: string;
@@ -18,7 +19,7 @@ interface Entrada {
   estado: "PENDIENTE" | "ENVIADO" | "INGRESADO" | "INVALIDADO";
   qrCode: string;
   createdAt: string;
-  evento: { nombre: string; fecha: string; horaApertura: string };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
   generadoPor: { nombre: string };
 }
 
@@ -50,6 +51,34 @@ export default function PublicasPage() {
   const [filtroEstado, setFiltroEstado] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Entrada | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (format: "excel" | "pdf") => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (filtroEvento) params.set("eventoId", filtroEvento);
+      if (filtroEstado) params.set("estado", filtroEstado);
+      if (searchQuery) params.set("search", searchQuery);
+
+      const res = await fetch(`/api/export/entradas?${params}`);
+      const json = await res.json();
+      if (!res.ok) return;
+
+      const data = json.data.entradas;
+      const filename = `entradas-${new Date().toISOString().slice(0, 10)}`;
+
+      if (format === "excel") {
+        await exportEntradasToExcel(data, `${filename}.xlsx`);
+      } else {
+        await exportEntradasToPdf(data, `${filename}.pdf`);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const fetchEntradas = useCallback(async (pageNum: number, append = false) => {
     if (append) setLoadingMore(true);
@@ -127,6 +156,28 @@ export default function PublicasPage() {
       <PageHeader
         title="Entradas"
         subtitle={`${total} entrada${total !== 1 ? "s" : ""}`}
+        actions={
+          <div className="flex gap-2">
+            <Button
+              variant="surface"
+              size="sm"
+              leftIcon={<FileSpreadsheet size={14} />}
+              onClick={() => handleExport("excel")}
+              disabled={exporting}
+            >
+              Excel
+            </Button>
+            <Button
+              variant="surface"
+              size="sm"
+              leftIcon={<FileText size={14} />}
+              onClick={() => handleExport("pdf")}
+              disabled={exporting}
+            >
+              PDF
+            </Button>
+          </div>
+        }
       />
 
       {/* Search */}
@@ -285,6 +336,9 @@ export default function PublicasPage() {
             ticketId={selected.id}
             qrCode={selected.qrCode}
             status={selected.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}
+            brandingBgUrl={selected.evento.brandingBgUrl}
+            brandingColorPrimary={selected.evento.brandingColorPrimary}
+            brandingColorText={selected.evento.brandingColorText}
             onSendEmail={async () => {
               await fetch(`/api/entradas/${selected.id}/enviar`, { method: "POST" });
               setSelected(null);

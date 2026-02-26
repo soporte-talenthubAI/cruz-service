@@ -102,7 +102,10 @@ export async function POST(request: NextRequest) {
     await requireRole("ADMIN");
 
     const body = await request.json();
-    const { nombre, fecha, horaApertura, tipo, capacidad, flyerUrl, rrppAsignados } = body;
+    const {
+      nombre, fecha, horaApertura, tipo, capacidad, flyerUrl,
+      rrppAsignados, brandingBgUrl, brandingColorPrimary, brandingColorText,
+    } = body;
 
     if (!nombre || !fecha || !horaApertura || !capacidad) {
       return errorResponse("Faltan campos obligatorios");
@@ -116,6 +119,9 @@ export async function POST(request: NextRequest) {
         tipo: tipo || "NORMAL",
         capacidad: Number(capacidad),
         flyerUrl,
+        brandingBgUrl: brandingBgUrl || undefined,
+        brandingColorPrimary: brandingColorPrimary || undefined,
+        brandingColorText: brandingColorText || undefined,
       },
     });
 

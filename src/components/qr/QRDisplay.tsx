@@ -22,6 +22,9 @@ interface QRDisplayProps {
   status: TicketStatus;
   onSendEmail?: () => Promise<void>;
   className?: string;
+  brandingBgUrl?: string | null;
+  brandingColorPrimary?: string | null;
+  brandingColorText?: string | null;
 }
 
 export function QRDisplay({
@@ -36,11 +39,18 @@ export function QRDisplay({
   status,
   onSendEmail,
   className,
+  brandingBgUrl,
+  brandingColorPrimary,
+  brandingColorText,
 }: QRDisplayProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
   const isActive = status === "enviado";
+
+  const accentColor = brandingColorPrimary || "#C5A059";
+  const textColor = brandingColorText || "#FFFFFF";
+  const bgUrl = brandingBgUrl || "/images/cruz_espacio.jpg";
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCode)}&bgcolor=FFFFFF&color=000000`;
 
@@ -105,18 +115,16 @@ export function QRDisplay({
           <Badge variant={status}>{status.toUpperCase()}</Badge>
         </div>
 
-        {/* Header with CRUZ ESPACIO background */}
+        {/* Header with background */}
         <div className="relative h-32 overflow-hidden">
-          <Image
-            src="/images/cruz_espacio.jpg"
-            alt=""
-            fill
-            className="object-cover"
-            quality={80}
-          />
+          {bgUrl.startsWith("/") ? (
+            <Image src={bgUrl} alt="" fill className="object-cover" quality={80} />
+          ) : (
+            <img src={bgUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          )}
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10 flex flex-col items-center justify-center h-full">
-            <span className="text-2xl font-bold tracking-[0.3em] gold-text">
+            <span className="text-2xl font-bold tracking-[0.3em]" style={{ color: accentColor }}>
               CRUZ
             </span>
             <span className="text-[10px] tracking-[0.25em] text-dark-300 uppercase">
@@ -127,11 +135,11 @@ export function QRDisplay({
 
         {/* Event info */}
         <div className="bg-surface-1 p-5 pb-3">
-          <h3 className="text-lg font-bold text-dark-50">{eventName}</h3>
+          <h3 className="text-lg font-bold" style={{ color: textColor }}>{eventName}</h3>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-sm text-gold-500 font-medium">{eventDate}</span>
+            <span className="text-sm font-medium" style={{ color: accentColor }}>{eventDate}</span>
             <span className="text-dark-600">•</span>
-            <span className="text-sm text-gold-500 font-medium">{eventTime}</span>
+            <span className="text-sm font-medium" style={{ color: accentColor }}>{eventTime}</span>
           </div>
         </div>
 

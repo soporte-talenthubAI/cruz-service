@@ -18,7 +18,7 @@ interface Entrada {
   estado: "PENDIENTE" | "ENVIADO" | "INGRESADO" | "INVALIDADO";
   qrCode: string;
   createdAt: string;
-  evento: { nombre: string; fecha: string; horaApertura: string };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
   generadoPor: { nombre: string };
 }
 
@@ -210,6 +210,9 @@ export default function MisQRsPage() {
             ticketId={selected.id}
             qrCode={selected.qrCode}
             status={selected.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}
+            brandingBgUrl={selected.evento.brandingBgUrl}
+            brandingColorPrimary={selected.evento.brandingColorPrimary}
+            brandingColorText={selected.evento.brandingColorText}
             onSendEmail={async () => {
               await fetch(`/api/entradas/${selected.id}/enviar`, { method: "POST" });
               setSelected(null);

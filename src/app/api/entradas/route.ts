@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
       prisma.entrada.findMany({
         where,
         include: {
-          evento: { select: { nombre: true, fecha: true, horaApertura: true } },
+          evento: {
+            select: {
+              nombre: true, fecha: true, horaApertura: true,
+              brandingBgUrl: true, brandingColorPrimary: true, brandingColorText: true,
+            },
+          },
           generadoPor: { select: { nombre: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -113,7 +118,12 @@ export async function POST(request: NextRequest) {
         estado: "PENDIENTE",
       },
       include: {
-        evento: { select: { nombre: true, fecha: true, horaApertura: true } },
+        evento: {
+          select: {
+            nombre: true, fecha: true, horaApertura: true,
+            brandingBgUrl: true, brandingColorPrimary: true, brandingColorText: true,
+          },
+        },
         generadoPor: { select: { nombre: true } },
       },
     });
