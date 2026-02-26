@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Ticket, Search } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Search } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -25,6 +25,7 @@ interface Entrada {
 interface Evento {
   id: string;
   nombre: string;
+  fecha: string;
 }
 
 const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "invalidado"> = {
@@ -34,6 +35,8 @@ const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "inv
   INVALIDADO: "invalidado",
 };
 
+type PeriodoTab = "all" | "upcoming" | "past";
+
 export default function PublicasPage() {
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -42,12 +45,13 @@ export default function PublicasPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [periodo, setPeriodo] = useState<PeriodoTab>("all");
   const [filtroEvento, setFiltroEvento] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Entrada | null>(null);
 
-  const fetchEntradas = async (pageNum: number, append = false) => {
+  const fetchEntradas = useCallback(async (pageNum: number, append = false) => {
     if (append) setLoadingMore(true);
 
     try {
@@ -76,33 +80,39 @@ export default function PublicasPage() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [filtroEvento, filtroEstado, searchQuery]);
 
-  const fetchEventos = async () => {
+  const fetchEventos = useCallback(async (status: PeriodoTab) => {
     try {
-      const res = await fetch("/api/eventos?status=all&limit=50");
+      const res = await fetch(`/api/eventos?status=${status}&limit=50`);
       const json = await res.json();
       if (res.ok) setEventos(json.data?.eventos || []);
     } catch {
       // silently fail
     }
-  };
+  }, []);
 
   useEffect(() => {
     async function init() {
-      await Promise.all([fetchEntradas(1), fetchEventos()]);
+      await Promise.all([fetchEntradas(1), fetchEventos("all")]);
       setLoading(false);
     }
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // When periodo changes, refetch events for that period
+  useEffect(() => {
+    setFiltroEvento("");
+    fetchEventos(periodo);
+  }, [periodo, fetchEventos]);
+
+  // When filters change, reset and refetch entradas
   useEffect(() => {
     setPage(1);
     setEntradas([]);
     fetchEntradas(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtroEvento, filtroEstado, searchQuery]);
+  }, [filtroEvento, filtroEstado, searchQuery, fetchEntradas]);
 
   const loadMore = () => {
     const next = page + 1;
@@ -131,18 +141,43 @@ export default function PublicasPage() {
         />
       </div>
 
-      {/* Filters */}
+      {/* Period tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        <select
-          value={filtroEvento}
-          onChange={(e) => setFiltroEvento(e.target.value)}
-          className="bg-surface-2 text-dark-200 text-sm rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.06)] outline-none min-w-0"
-        >
-          <option value="">Todos los eventos</option>
-          {eventos.map((ev) => (
-            <option key={ev.id} value={ev.id}>{ev.nombre}</option>
-          ))}
-        </select>
+        {([
+          { value: "all", label: "Todos" },
+          { value: "upcoming", label: "Próximos" },
+          { value: "past", label: "Pasados" },
+        ] as { value: PeriodoTab; label: string }[]).map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setPeriodo(tab.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              periodo === tab.value
+                ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
+                : "bg-surface-2 text-dark-400 border border-transparent"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Event + Status filters */}
+      <div className="flex gap-2 flex-wrap">
+        {eventos.length > 0 && (
+          <select
+            value={filtroEvento}
+            onChange={(e) => setFiltroEvento(e.target.value)}
+            className="bg-surface-2 text-dark-200 text-xs rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.06)] outline-none max-w-[200px]"
+          >
+            <option value="">Todos los eventos</option>
+            {eventos.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.nombre} — {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Status pills */}
@@ -162,25 +197,60 @@ export default function PublicasPage() {
         ))}
       </div>
 
-      {/* List */}
+      {/* Table */}
       {entradas.length > 0 ? (
-        <div className="space-y-2">
-          {entradas.map((entrada) => (
-            <button
-              key={entrada.id}
-              onClick={() => setSelected(entrada)}
-              className="w-full glass-card p-4 flex items-center justify-between gap-3 text-left transition-colors hover:border-gold-500/30"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-dark-100 truncate">{entrada.nombreInvitado}</p>
-                <p className="text-xs text-dark-400">DNI: {entrada.dniInvitado}</p>
-                <p className="text-xs text-dark-500 mt-0.5">{entrada.evento.nombre} — {entrada.generadoPor.nombre}</p>
-              </div>
-              <Badge variant={estadoVariant[entrada.estado]}>
-                {entrada.estado}
-              </Badge>
-            </button>
-          ))}
+        <>
+          <p className="text-xs text-dark-500">
+            Mostrando {entradas.length} de {total}
+          </p>
+
+          <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[rgba(255,255,255,0.06)] bg-surface-2">
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">Invitado</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">DNI</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3 hidden sm:table-cell">Evento</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3 hidden sm:table-cell">RRPP</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">Estado</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3 hidden md:table-cell">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entradas.map((entrada) => (
+                  <tr
+                    key={entrada.id}
+                    onClick={() => setSelected(entrada)}
+                    className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
+                  >
+                    <td className="px-4 py-3 text-dark-100 font-medium truncate max-w-[140px]">
+                      {entrada.nombreInvitado}
+                    </td>
+                    <td className="px-4 py-3 text-dark-300 text-xs font-mono">
+                      {entrada.dniInvitado}
+                    </td>
+                    <td className="px-4 py-3 text-dark-400 text-xs truncate max-w-[120px] hidden sm:table-cell">
+                      {entrada.evento.nombre}
+                    </td>
+                    <td className="px-4 py-3 text-dark-400 text-xs truncate max-w-[100px] hidden sm:table-cell">
+                      {entrada.generadoPor.nombre}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={estadoVariant[entrada.estado]}>
+                        {entrada.estado}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-dark-500 text-xs hidden md:table-cell">
+                      {new Date(entrada.createdAt).toLocaleDateString("es-AR", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {page < totalPages && (
             <Button
@@ -193,7 +263,7 @@ export default function PublicasPage() {
               Cargar más
             </Button>
           )}
-        </div>
+        </>
       ) : (
         <EmptyState
           icon={<Search />}

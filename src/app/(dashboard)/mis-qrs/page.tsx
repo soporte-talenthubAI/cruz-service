@@ -130,25 +130,52 @@ export default function MisQRsPage() {
         ))}
       </div>
 
-      {/* List */}
+      {/* Counter */}
+      {entradas.length > 0 && (
+        <p className="text-xs text-dark-500">
+          Mostrando {entradas.length} de {total}
+        </p>
+      )}
+
+      {/* Table */}
       {entradas.length > 0 ? (
-        <div className="space-y-2">
-          {entradas.map((entrada) => (
-            <button
-              key={entrada.id}
-              onClick={() => setSelected(entrada)}
-              className="w-full glass-card p-4 flex items-center justify-between gap-3 text-left transition-colors hover:border-gold-500/30"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-dark-100 truncate">{entrada.nombreInvitado}</p>
-                <p className="text-xs text-dark-400">DNI: {entrada.dniInvitado}</p>
-                <p className="text-xs text-dark-500 mt-0.5">{entrada.evento.nombre}</p>
-              </div>
-              <Badge variant={estadoVariant[entrada.estado]}>
-                {entrada.estado}
-              </Badge>
-            </button>
-          ))}
+        <>
+          <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-[rgba(255,255,255,0.06)] bg-surface-2">
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400">Invitado</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden sm:table-cell">DNI</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden md:table-cell">Evento</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400">Estado</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden sm:table-cell">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entradas.map((entrada) => (
+                  <tr
+                    key={entrada.id}
+                    onClick={() => setSelected(entrada)}
+                    className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-dark-100 truncate max-w-[160px]">{entrada.nombreInvitado}</p>
+                      <p className="text-xs text-dark-500 sm:hidden">{entrada.dniInvitado}</p>
+                      <p className="text-xs text-dark-500 md:hidden mt-0.5">{entrada.evento.nombre}</p>
+                    </td>
+                    <td className="px-4 py-3 text-dark-300 hidden sm:table-cell">{entrada.dniInvitado}</td>
+                    <td className="px-4 py-3 text-dark-300 hidden md:table-cell truncate max-w-[180px]">{entrada.evento.nombre}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={estadoVariant[entrada.estado]}>{entrada.estado}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-dark-400 text-xs hidden sm:table-cell whitespace-nowrap">
+                      {new Date(entrada.createdAt).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {page < totalPages && (
             <Button
@@ -161,7 +188,7 @@ export default function MisQRsPage() {
               Cargar más
             </Button>
           )}
-        </div>
+        </>
       ) : (
         <EmptyState
           icon={<Ticket />}

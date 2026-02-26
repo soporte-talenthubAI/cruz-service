@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClipboardList, Clock, Search } from "lucide-react";
+import { ClipboardList, Search } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Spinner } from "@/components/ui/Spinner";
@@ -108,40 +108,51 @@ export default function HistorialPage() {
         </select>
       )}
 
-      {/* List */}
+      {/* Counter */}
+      {entradas.length > 0 && (
+        <p className="text-xs text-dark-500">
+          Mostrando {entradas.length} de {total}
+        </p>
+      )}
+
+      {/* Table */}
       {entradas.length > 0 ? (
-        <div className="space-y-2">
-          {entradas.map((scan) => (
-            <div
-              key={scan.id}
-              className="glass-card p-4 flex items-center justify-between gap-3"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-dark-100 truncate">
-                  {scan.nombreInvitado}
-                </p>
-                <p className="text-xs text-dark-400">DNI: {scan.dniInvitado}</p>
-                <p className="text-xs text-dark-500 mt-0.5">{scan.evento.nombre}</p>
-              </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                <div className="flex items-center gap-1 text-dark-400">
-                  <Clock size={12} />
-                  <span className="text-xs">
-                    {new Date(scan.fechaIngreso).toLocaleTimeString("es-AR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-                <span className="text-[10px] text-dark-500">
-                  {new Date(scan.fechaIngreso).toLocaleDateString("es-AR", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-                </span>
-              </div>
-            </div>
-          ))}
+        <>
+          <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-[rgba(255,255,255,0.06)] bg-surface-2">
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400">Invitado</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden sm:table-cell">DNI</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden md:table-cell">Evento</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400">Hora</th>
+                  <th className="px-4 py-3 text-xs font-medium text-dark-400 hidden sm:table-cell">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entradas.map((scan) => (
+                  <tr
+                    key={scan.id}
+                    className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-dark-100 truncate max-w-[160px]">{scan.nombreInvitado}</p>
+                      <p className="text-xs text-dark-500 sm:hidden">{scan.dniInvitado}</p>
+                      <p className="text-xs text-dark-500 md:hidden mt-0.5">{scan.evento.nombre}</p>
+                    </td>
+                    <td className="px-4 py-3 text-dark-300 hidden sm:table-cell">{scan.dniInvitado}</td>
+                    <td className="px-4 py-3 text-dark-300 hidden md:table-cell truncate max-w-[180px]">{scan.evento.nombre}</td>
+                    <td className="px-4 py-3 text-dark-300 text-xs whitespace-nowrap">
+                      {new Date(scan.fechaIngreso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="px-4 py-3 text-dark-400 text-xs hidden sm:table-cell whitespace-nowrap">
+                      {new Date(scan.fechaIngreso).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {page < totalPages && (
             <Button
@@ -154,7 +165,7 @@ export default function HistorialPage() {
               Cargar más
             </Button>
           )}
-        </div>
+        </>
       ) : (
         <EmptyState
           icon={<ClipboardList />}
