@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Plus, Check } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EventCard } from "@/components/events/EventCard";
+import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -255,24 +255,66 @@ export default function EventosPage() {
         ))}
       </div>
 
-      {/* Event list */}
+      {/* Event table */}
       {eventos.length > 0 ? (
-        <div className="space-y-3">
-          {eventos.map((e) => (
-            <EventCard
-              key={e.id}
-              name={e.nombre}
-              date={new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-              time={e.horaApertura}
-              type={e.tipo.toLowerCase() as "normal" | "especial"}
-              capacity={e.capacidad}
-              ticketsSold={e.stats.total}
-              ingresados={e.stats.ingresadas}
-              isPast={isPast}
-              flyerUrl={e.flyerUrl}
-              onClick={() => router.push(`/eventos/${e.id}`)}
-            />
-          ))}
+        <>
+          <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[rgba(255,255,255,0.06)] bg-surface-2">
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">Evento</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3 hidden sm:table-cell">Fecha</th>
+                  <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">Tipo</th>
+                  <th className="text-right text-xs font-medium text-dark-400 px-4 py-3">Entradas</th>
+                  <th className="text-right text-xs font-medium text-dark-400 px-4 py-3 hidden sm:table-cell">Ingresados</th>
+                  <th className="text-right text-xs font-medium text-dark-400 px-4 py-3 hidden md:table-cell">Capacidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {eventos.map((e) => {
+                  const pct = e.capacidad > 0 ? Math.round((e.stats.total / e.capacidad) * 100) : 0;
+                  return (
+                    <tr
+                      key={e.id}
+                      onClick={() => router.push(`/eventos/${e.id}`)}
+                      className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-dark-100 truncate max-w-[180px]">{e.nombre}</p>
+                        <p className="text-xs text-dark-500 sm:hidden mt-0.5">
+                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })} — {e.horaApertura}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <p className="text-dark-200 text-xs whitespace-nowrap">
+                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                        <p className="text-dark-500 text-xs">{e.horaApertura}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={e.tipo === "ESPECIAL" ? "especial" : "normal"}>
+                          {e.tipo}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-dark-200 font-medium">{e.stats.total}</span>
+                        <span className="text-dark-500 text-xs ml-1">/ {e.capacidad}</span>
+                        <span className={`text-xs ml-1 ${pct >= 90 ? "text-error" : pct >= 70 ? "text-warning" : "text-dark-500"}`}>
+                          ({pct}%)
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right hidden sm:table-cell">
+                        <span className="text-success font-medium">{e.stats.ingresadas}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right hidden md:table-cell text-dark-400">
+                        {e.capacidad}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
           {page < totalPages && (
             <Button
@@ -285,7 +327,7 @@ export default function EventosPage() {
               Cargar más
             </Button>
           )}
-        </div>
+        </>
       ) : (
         <EmptyState
           icon={<Calendar />}
