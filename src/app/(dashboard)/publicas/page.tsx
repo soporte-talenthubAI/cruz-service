@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
 import { exportEntradasToExcel, exportEntradasToPdf } from "@/lib/export";
 
 interface Entrada {
@@ -23,12 +24,6 @@ interface Entrada {
   generadoPor: { nombre: string };
 }
 
-interface Evento {
-  id: string;
-  nombre: string;
-  fecha: string;
-}
-
 const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "invalidado"> = {
   PENDIENTE: "pendiente",
   ENVIADO: "enviado",
@@ -36,22 +31,23 @@ const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "inv
   INVALIDADO: "invalidado",
 };
 
-type PeriodoTab = "all" | "upcoming" | "past";
-
 export default function PublicasPage() {
+  const now = new Date();
   const [entradas, setEntradas] = useState<Entrada[]>([]);
-  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [eventos, setEventos] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingEventos, setLoadingEventos] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [periodo, setPeriodo] = useState<PeriodoTab>("all");
   const [filtroEvento, setFiltroEvento] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Entrada | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [calMonth, setCalMonth] = useState(now.getMonth() + 1);
+  const [calYear, setCalYear] = useState(now.getFullYear());
 
   const handleExport = async (format: "excel" | "pdf") => {
     setExporting(true);
@@ -111,30 +107,32 @@ export default function PublicasPage() {
     }
   }, [filtroEvento, filtroEstado, searchQuery]);
 
-  const fetchEventos = useCallback(async (status: PeriodoTab) => {
+  const fetchEventos = useCallback(async (m: number, y: number) => {
+    setLoadingEventos(true);
     try {
-      const res = await fetch(`/api/eventos?status=${status}&limit=50`);
+      const res = await fetch(`/api/eventos?month=${m}&year=${y}&limit=50`);
       const json = await res.json();
       if (res.ok) setEventos(json.data?.eventos || []);
     } catch {
       // silently fail
+    } finally {
+      setLoadingEventos(false);
     }
   }, []);
 
   useEffect(() => {
     async function init() {
-      await Promise.all([fetchEntradas(1), fetchEventos("all")]);
+      await Promise.all([fetchEntradas(1), fetchEventos(calMonth, calYear)]);
       setLoading(false);
     }
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When periodo changes, refetch events for that period
+  // When calendar month changes, refetch events
   useEffect(() => {
-    setFiltroEvento("");
-    fetchEventos(periodo);
-  }, [periodo, fetchEventos]);
+    fetchEventos(calMonth, calYear);
+  }, [calMonth, calYear, fetchEventos]);
 
   // When filters change, reset and refetch entradas
   useEffect(() => {
@@ -192,44 +190,19 @@ export default function PublicasPage() {
         />
       </div>
 
-      {/* Period tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {([
-          { value: "all", label: "Todos" },
-          { value: "upcoming", label: "Próximos" },
-          { value: "past", label: "Pasados" },
-        ] as { value: PeriodoTab; label: string }[]).map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setPeriodo(tab.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              periodo === tab.value
-                ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
-                : "bg-surface-2 text-dark-400 border border-transparent"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Event + Status filters */}
-      <div className="flex gap-2 flex-wrap">
-        {eventos.length > 0 && (
-          <select
-            value={filtroEvento}
-            onChange={(e) => setFiltroEvento(e.target.value)}
-            className="bg-surface-2 text-dark-200 text-xs rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.06)] outline-none max-w-[200px]"
-          >
-            <option value="">Todos los eventos</option>
-            {eventos.map((ev) => (
-              <option key={ev.id} value={ev.id}>
-                {ev.nombre} — {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      {/* Event calendar filter */}
+      <EventCalendar
+        eventos={eventos}
+        selectedId={filtroEvento}
+        onSelect={setFiltroEvento}
+        onMonthChange={(m, y) => {
+          setCalMonth(m);
+          setCalYear(y);
+        }}
+        loading={loadingEventos}
+        allowAll
+        allLabel="Todos los eventos"
+      />
 
       {/* Status pills */}
       <div className="flex gap-2 overflow-x-auto pb-1">

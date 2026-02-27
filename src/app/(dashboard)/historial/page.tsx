@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
+import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
 
 interface Escaneo {
   id: string;
@@ -15,21 +16,19 @@ interface Escaneo {
   evento: { nombre: string; fecha: string };
 }
 
-interface Evento {
-  id: string;
-  nombre: string;
-  fecha: string;
-}
-
 export default function HistorialPage() {
+  const now = new Date();
   const [entradas, setEntradas] = useState<Escaneo[]>([]);
-  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [eventos, setEventos] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingEventos, setLoadingEventos] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [filtroEvento, setFiltroEvento] = useState("");
+  const [calMonth, setCalMonth] = useState(now.getMonth() + 1);
+  const [calYear, setCalYear] = useState(now.getFullYear());
 
   const fetchHistorial = async (pageNum: number, append = false) => {
     if (append) setLoadingMore(true);
@@ -49,7 +48,6 @@ export default function HistorialPage() {
           setEntradas((prev) => [...prev, ...(data.entradas || [])]);
         } else {
           setEntradas(data.entradas || []);
-          setEventos(data.eventos || []);
         }
         setTotalPages(data.meta?.totalPages || 1);
         setTotal(data.meta?.total || 0);
@@ -61,14 +59,32 @@ export default function HistorialPage() {
     }
   };
 
+  const fetchEventos = async (m: number, y: number) => {
+    setLoadingEventos(true);
+    try {
+      const res = await fetch(`/api/eventos?month=${m}&year=${y}&limit=50`);
+      const json = await res.json();
+      if (res.ok) setEventos(json.data?.eventos || []);
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingEventos(false);
+    }
+  };
+
   useEffect(() => {
     async function init() {
-      await fetchHistorial(1);
+      await Promise.all([fetchHistorial(1), fetchEventos(calMonth, calYear)]);
       setLoading(false);
     }
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchEventos(calMonth, calYear);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calMonth, calYear]);
 
   useEffect(() => {
     setPage(1);
@@ -92,21 +108,19 @@ export default function HistorialPage() {
         subtitle={`${total} escaneo${total !== 1 ? "s" : ""} registrado${total !== 1 ? "s" : ""}`}
       />
 
-      {/* Event filter */}
-      {eventos.length > 0 && (
-        <select
-          value={filtroEvento}
-          onChange={(e) => setFiltroEvento(e.target.value)}
-          className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl px-4 py-3 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
-        >
-          <option value="">Todos los eventos</option>
-          {eventos.map((ev) => (
-            <option key={ev.id} value={ev.id}>
-              {ev.nombre} — {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
-            </option>
-          ))}
-        </select>
-      )}
+      {/* Event calendar filter */}
+      <EventCalendar
+        eventos={eventos}
+        selectedId={filtroEvento}
+        onSelect={setFiltroEvento}
+        onMonthChange={(m, y) => {
+          setCalMonth(m);
+          setCalYear(y);
+        }}
+        loading={loadingEventos}
+        allowAll
+        allLabel="Todos los eventos"
+      />
 
       {/* Counter */}
       {entradas.length > 0 && (

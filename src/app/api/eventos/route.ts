@@ -26,7 +26,18 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
 
-    if (status === "upcoming") {
+    // Month/year filter for calendar view
+    const monthParam = searchParams.get("month");
+    const yearParam = searchParams.get("year");
+
+    if (monthParam && yearParam) {
+      const m = Number(monthParam);
+      const y = Number(yearParam);
+      const startDate = new Date(y, m - 1, 1);
+      const endDate = new Date(y, m, 0, 23, 59, 59);
+      where.fecha = { gte: startDate, lte: endDate };
+      where.activo = true;
+    } else if (status === "upcoming") {
       where.fecha = { gte: today };
       where.activo = true;
     } else if (status === "past") {

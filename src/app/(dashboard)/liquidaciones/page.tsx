@@ -7,13 +7,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
 import { exportLiquidacionesToExcel, exportLiquidacionesToPdf } from "@/lib/export";
-
-interface Evento {
-  id: string;
-  nombre: string;
-  fecha: string;
-}
 
 interface Liquidacion {
   rrpp: { id: string; nombre: string; email: string };
@@ -32,28 +27,34 @@ interface LiquidacionData {
 export default function LiquidacionesPage() {
   const searchParams = useSearchParams();
   const initialEventoId = searchParams.get("eventoId") || "";
+  const now = new Date();
 
-  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [eventos, setEventos] = useState<CalendarEvent[]>([]);
   const [eventoId, setEventoId] = useState(initialEventoId);
   const [data, setData] = useState<LiquidacionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingEventos, setLoadingEventos] = useState(false);
   const [loadingLiq, setLoadingLiq] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(now.getFullYear());
 
   useEffect(() => {
     async function fetchEventos() {
+      setLoadingEventos(true);
       try {
-        const res = await fetch("/api/eventos?status=all&limit=50");
+        const res = await fetch(`/api/eventos?month=${currentMonth}&year=${currentYear}&limit=50`);
         const json = await res.json();
         if (res.ok) setEventos(json.data?.eventos || []);
       } catch {
         // silently fail
       } finally {
         setLoading(false);
+        setLoadingEventos(false);
       }
     }
     fetchEventos();
-  }, []);
+  }, [currentMonth, currentYear]);
 
   const fetchLiquidaciones = useCallback(async (id: string) => {
     if (!id) {
@@ -126,21 +127,19 @@ export default function LiquidacionesPage() {
         }
       />
 
-      {/* Event selector */}
+      {/* Event calendar selector */}
       <div>
         <label className="text-sm text-dark-300 mb-2 block">Evento</label>
-        <select
-          value={eventoId}
-          onChange={(e) => setEventoId(e.target.value)}
-          className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl px-4 py-3 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
-        >
-          <option value="">Seleccionar evento...</option>
-          {eventos.map((ev) => (
-            <option key={ev.id} value={ev.id}>
-              {ev.nombre} — {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
-            </option>
-          ))}
-        </select>
+        <EventCalendar
+          eventos={eventos}
+          selectedId={eventoId}
+          onSelect={setEventoId}
+          onMonthChange={(m, y) => {
+            setCurrentMonth(m);
+            setCurrentYear(y);
+          }}
+          loading={loadingEventos}
+        />
       </div>
 
       {loadingLiq && <Spinner />}

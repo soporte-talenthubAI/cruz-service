@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { QRDisplay } from "@/components/qr/QRDisplay";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { EventCalendar } from "@/components/ui/EventCalendar";
 
 interface Evento {
   id: string;
@@ -30,11 +31,17 @@ interface EntradaCreada {
 }
 
 export default function NuevoQRPage() {
+  const now = new Date();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingEventos, setLoadingEventos] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [entradaCreada, setEntradaCreada] = useState<EntradaCreada | null>(null);
+
+  // Calendar
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(now.getFullYear());
 
   // Form
   const [eventoId, setEventoId] = useState("");
@@ -44,18 +51,20 @@ export default function NuevoQRPage() {
 
   useEffect(() => {
     async function fetchEventos() {
+      setLoadingEventos(true);
       try {
-        const res = await fetch("/api/eventos?status=upcoming&limit=50");
+        const res = await fetch(`/api/eventos?month=${currentMonth}&year=${currentYear}&limit=50`);
         const json = await res.json();
         if (res.ok) setEventos(json.data?.eventos || []);
       } catch {
         // silently fail
       } finally {
         setLoading(false);
+        setLoadingEventos(false);
       }
     }
     fetchEventos();
-  }, []);
+  }, [currentMonth, currentYear]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,22 +163,19 @@ export default function NuevoQRPage() {
           )}
 
           <form onSubmit={handleCreate} className="flex flex-col gap-4">
-            {/* Event selector */}
+            {/* Event calendar selector */}
             <div>
               <label className="text-sm text-dark-300 mb-2 block">Evento</label>
-              <select
-                value={eventoId}
-                onChange={(e) => setEventoId(e.target.value)}
-                required
-                className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl px-4 py-3 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
-              >
-                <option value="">Seleccionar evento...</option>
-                {eventos.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.nombre} — {ev.stats.total}/{ev.capacidad}
-                  </option>
-                ))}
-              </select>
+              <EventCalendar
+                eventos={eventos}
+                selectedId={eventoId}
+                onSelect={setEventoId}
+                onMonthChange={(m, y) => {
+                  setCurrentMonth(m);
+                  setCurrentYear(y);
+                }}
+                loading={loadingEventos}
+              />
             </div>
 
             {selectedEvento && selectedEvento.stats.total >= selectedEvento.capacidad && (
