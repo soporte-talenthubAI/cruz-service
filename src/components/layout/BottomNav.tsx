@@ -59,7 +59,7 @@ export function BottomNav({ role }: BottomNavProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold-500/15 bg-surface-1/90 backdrop-blur-[16px]"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold-500/15 bg-surface-1/90 backdrop-blur-[16px] lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">

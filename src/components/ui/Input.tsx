@@ -39,6 +39,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputType = isPassword && showPassword ? "text" : type;
 
     const hasValue = props.value !== undefined && props.value !== "";
+    // Always float label for date/time/color inputs (browser renders native UI)
+    const alwaysFloat =
+      type === "date" || type === "time" || type === "color";
+    const shouldFloat = focused || hasValue || alwaysFloat;
 
     return (
       <div className="flex flex-col gap-1.5 w-full">
@@ -78,9 +82,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               className={cn(
                 "absolute left-4 transition-all duration-200 pointer-events-none",
                 leftIcon && "left-11",
-                focused || hasValue
+                shouldFloat
                   ? "top-2 text-[11px] text-gold-500"
-                  : "top-1/2 -translate-y-1/2 text-dark-400 text-base"
+                  : "top-1/2 -translate-y-1/2 text-dark-400 text-base",
+                // CSS fallback: float label when input has content (autofill)
+                !shouldFloat &&
+                  "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:text-gold-500 peer-[:not(:placeholder-shown)]:translate-y-0"
               )}
             >
               {label}

@@ -32,12 +32,14 @@ export default function ScannerPage() {
   }, []);
 
   return (
-    <div className="-mx-4 -mt-14" style={{ marginTop: "calc(-56px - env(safe-area-inset-top))" }}>
-      <QRScanner
-        onScan={handleScan}
-        scanResult={scanResult}
-        onReset={() => setScanResult(null)}
-      />
+    <div className="-mx-4 -mt-14 lg:mx-0 lg:mt-0 lg:pt-4" style={{ marginTop: "calc(-56px - env(safe-area-inset-top))" }}>
+      <div className="lg:max-w-2xl lg:mx-auto lg:rounded-2xl lg:overflow-hidden lg:h-[75vh]">
+        <QRScanner
+          onScan={handleScan}
+          scanResult={scanResult}
+          onReset={() => setScanResult(null)}
+        />
+      </div>
     </div>
   );
 }

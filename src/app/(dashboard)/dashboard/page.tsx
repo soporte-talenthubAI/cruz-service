@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { formatTime12h } from "@/lib/utils";
 
 interface Stats {
   eventos: { total: number; activos: number };
@@ -102,7 +103,7 @@ function AdminDashboard() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader title="Dashboard" subtitle="Panel de control" />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           value={stats?.eventos.activos ?? 0}
           label="Eventos activos"
@@ -146,6 +147,7 @@ function AdminDashboard() {
         </Button>
       </div>
 
+      <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-6 lg:space-y-0">
       {/* Evento en curso — shows the closest upcoming event with capacity progress */}
       {eventos.length > 0 && (() => {
         const ev = eventos[0];
@@ -161,7 +163,7 @@ function AdminDashboard() {
             <div>
               <p className="text-base font-semibold text-dark-100">{ev.nombre}</p>
               <p className="text-xs text-dark-400 mt-0.5">
-                {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {ev.horaApertura}
+                {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
               </p>
             </div>
             <div>
@@ -209,17 +211,18 @@ function AdminDashboard() {
           </div>
         </div>
       )}
+      </div>
 
       <div>
         <h3 className="text-sm font-medium text-dark-300 mb-3">Próximos eventos</h3>
         {eventos.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
             {eventos.map((e) => (
               <EventCard
                 key={e.id}
                 name={e.nombre}
                 date={new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
-                time={e.horaApertura}
+                time={formatTime12h(e.horaApertura)}
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}
                 ticketsSold={e.stats.total}
@@ -283,7 +286,7 @@ function PorteroDashboard() {
       <Button
         variant="gold"
         size="lg"
-        className="w-full"
+        className="w-full lg:w-auto lg:px-12"
         leftIcon={<ScanLine size={20} />}
         onClick={() => router.push("/scanner")}
       >
@@ -316,7 +319,7 @@ function PorteroDashboard() {
           <div>
             <p className="text-base font-semibold text-dark-100">{ev.nombre}</p>
             <p className="text-xs text-dark-400 mt-0.5">
-              {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {ev.horaApertura}
+              {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
             </p>
           </div>
           {/* Progress bar */}

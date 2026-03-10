@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
+import { formatTime12h } from "@/lib/utils";
 
 interface EventoStats {
   total: number;
@@ -40,7 +41,7 @@ interface RrppOption {
 
 interface RrppAsignado {
   usuarioId: string;
-  montoPorQr: number;
+  montoPorQr: number | string;
 }
 
 type Tab = "upcoming" | "past";
@@ -161,11 +162,11 @@ export default function EventosPage() {
     setRrppAsignados((prev) => {
       const exists = prev.find((r) => r.usuarioId === id);
       if (exists) return prev.filter((r) => r.usuarioId !== id);
-      return [...prev, { usuarioId: id, montoPorQr: 0 }];
+      return [...prev, { usuarioId: id, montoPorQr: "" }];
     });
   };
 
-  const updateMonto = (usuarioId: string, monto: number) => {
+  const updateMonto = (usuarioId: string, monto: number | string) => {
     setRrppAsignados((prev) =>
       prev.map((r) => (r.usuarioId === usuarioId ? { ...r, montoPorQr: monto } : r))
     );
@@ -186,7 +187,10 @@ export default function EventosPage() {
           horaApertura,
           tipo,
           capacidad: Number(capacidad),
-          rrppAsignados,
+          rrppAsignados: rrppAsignados.map((r) => ({
+            ...r,
+            montoPorQr: Number(r.montoPorQr) || 0,
+          })),
           brandingBgUrl: brandingBgUrl || undefined,
           brandingColorPrimary: brandingColorPrimary !== "#C5A059" ? brandingColorPrimary : undefined,
           brandingColorText: brandingColorText !== "#FFFFFF" ? brandingColorText : undefined,
@@ -280,16 +284,16 @@ export default function EventosPage() {
                       className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
                     >
                       <td className="px-4 py-3">
-                        <p className="font-medium text-dark-100 truncate max-w-[180px]">{e.nombre}</p>
+                        <p className="font-medium text-dark-100 truncate max-w-[180px] lg:max-w-[300px]">{e.nombre}</p>
                         <p className="text-xs text-dark-500 sm:hidden mt-0.5">
-                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })} — {e.horaApertura}
+                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })} — {formatTime12h(e.horaApertura)}
                         </p>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
                         <p className="text-dark-200 text-xs whitespace-nowrap">
                           {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
-                        <p className="text-dark-500 text-xs">{e.horaApertura}</p>
+                        <p className="text-dark-500 text-xs">{formatTime12h(e.horaApertura)}</p>
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={e.tipo === "ESPECIAL" ? "especial" : "normal"}>
@@ -536,8 +540,8 @@ export default function EventosPage() {
                             label="Monto por QR ($)"
                             type="number"
                             step="0.01"
-                            value={asignado?.montoPorQr?.toString() || "0"}
-                            onChange={(e) => updateMonto(rrpp.id, Number(e.target.value) || 0)}
+                            value={asignado?.montoPorQr?.toString() ?? ""}
+                            onChange={(e) => updateMonto(rrpp.id, e.target.value === "" ? "" : Number(e.target.value))}
                           />
                         </div>
                       )}

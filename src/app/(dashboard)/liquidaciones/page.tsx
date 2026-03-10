@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { DollarSign, FileSpreadsheet, FileText } from "lucide-react";
+import { DollarSign, FileSpreadsheet, FileText, Printer } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
-import { exportLiquidacionesToExcel, exportLiquidacionesToPdf } from "@/lib/export";
+import { exportLiquidacionesToExcel, exportLiquidacionesToPdf, exportRrppDetailPdf } from "@/lib/export";
 
 interface Liquidacion {
   rrpp: { id: string; nombre: string; email: string };
@@ -127,6 +127,7 @@ export default function LiquidacionesPage() {
         }
       />
 
+      <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-6 space-y-4 lg:space-y-0">
       {/* Event calendar selector */}
       <div>
         <label className="text-sm text-dark-300 mb-2 block">Evento</label>
@@ -142,6 +143,7 @@ export default function LiquidacionesPage() {
         />
       </div>
 
+      <div className="space-y-4">
       {loadingLiq && <Spinner />}
 
       {!loadingLiq && data && (
@@ -170,9 +172,10 @@ export default function LiquidacionesPage() {
                   <tr className="border-b border-[rgba(255,255,255,0.06)] bg-surface-2">
                     <th className="text-left text-xs font-medium text-dark-400 px-4 py-3">RRPP</th>
                     <th className="text-right text-xs font-medium text-dark-400 px-4 py-3">$/QR</th>
-                    <th className="text-right text-xs font-medium text-dark-400 px-4 py-3">Generadas</th>
+                    <th className="text-right text-xs font-medium text-dark-400 px-4 py-3 hidden sm:table-cell">Generadas</th>
                     <th className="text-right text-xs font-medium text-dark-400 px-4 py-3">Ingresadas</th>
                     <th className="text-right text-xs font-medium text-dark-400 px-4 py-3">A pagar</th>
+                    <th className="text-center text-xs font-medium text-dark-400 px-2 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -188,7 +191,7 @@ export default function LiquidacionesPage() {
                       <td className="px-4 py-3 text-right text-dark-300">
                         ${l.montoPorQr}
                       </td>
-                      <td className="px-4 py-3 text-right text-dark-300">
+                      <td className="px-4 py-3 text-right text-dark-300 hidden sm:table-cell">
                         {l.totalGeneradas}
                       </td>
                       <td className="px-4 py-3 text-right text-dark-200 font-medium">
@@ -197,19 +200,42 @@ export default function LiquidacionesPage() {
                       <td className="px-4 py-3 text-right text-gold-500 font-bold">
                         ${l.montoAPagar.toLocaleString("es-AR")}
                       </td>
+                      <td className="px-2 py-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportRrppDetailPdf(
+                              l.rrpp.nombre,
+                              l.rrpp.email,
+                              data.evento.nombre,
+                              new Date(data.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }),
+                              l.montoPorQr,
+                              l.totalGeneradas,
+                              l.totalIngresadas,
+                              l.montoAPagar,
+                              `recibo-${l.rrpp.nombre.replace(/\s+/g, "-").toLowerCase()}.pdf`
+                            );
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-gold-500/10 text-dark-400 hover:text-gold-500 transition-colors"
+                          title="Imprimir recibo"
+                        >
+                          <Printer size={14} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {/* Totals row */}
                   <tr className="bg-surface-2 border-t border-[rgba(255,255,255,0.08)]">
                     <td className="px-4 py-3 text-dark-200 font-bold">TOTAL</td>
                     <td className="px-4 py-3" />
-                    <td className="px-4 py-3" />
+                    <td className="px-4 py-3 hidden sm:table-cell" />
                     <td className="px-4 py-3 text-right text-dark-200 font-bold">
                       {data.totales.totalIngresadas}
                     </td>
                     <td className="px-4 py-3 text-right text-gold-500 font-bold text-lg">
                       ${data.totales.montoTotal.toLocaleString("es-AR")}
                     </td>
+                    <td className="px-2 py-3" />
                   </tr>
                 </tbody>
               </table>
@@ -231,6 +257,8 @@ export default function LiquidacionesPage() {
           description="Elegí un evento para ver las liquidaciones de RRPP"
         />
       )}
+      </div>
+      </div>
     </div>
   );
 }

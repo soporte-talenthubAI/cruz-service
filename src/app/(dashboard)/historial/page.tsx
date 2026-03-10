@@ -108,7 +108,9 @@ export default function HistorialPage() {
         subtitle={`${total} escaneo${total !== 1 ? "s" : ""} registrado${total !== 1 ? "s" : ""}`}
       />
 
+      <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-6 space-y-4 lg:space-y-0">
       {/* Event calendar filter */}
+      <div>
       <EventCalendar
         eventos={eventos}
         selectedId={filtroEvento}
@@ -121,7 +123,9 @@ export default function HistorialPage() {
         allowAll
         allLabel="Todos los eventos"
       />
+      </div>
 
+      <div className="space-y-4">
       {/* Counter */}
       {entradas.length > 0 && (
         <p className="text-xs text-dark-500">
@@ -150,7 +154,7 @@ export default function HistorialPage() {
                     className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <p className="font-medium text-dark-100 truncate max-w-[160px]">{scan.nombreInvitado}</p>
+                      <p className="font-medium text-dark-100 truncate max-w-[160px] lg:max-w-none">{scan.nombreInvitado}</p>
                       <p className="text-xs text-dark-500 sm:hidden">{scan.dniInvitado}</p>
                       <p className="text-xs text-dark-500 md:hidden mt-0.5">{scan.evento.nombre}</p>
                     </td>
@@ -191,6 +195,8 @@ export default function HistorialPage() {
           }
         />
       )}
+      </div>
+      </div>
     </div>
   );
 }

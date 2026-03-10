@@ -101,8 +101,9 @@ export default function MisQRsPage() {
         subtitle={`${total} entrada${total !== 1 ? "s" : ""} generada${total !== 1 ? "s" : ""}`}
       />
 
-      {/* Search */}
-      <div className="relative">
+      {/* Search + Filters */}
+      <div className="space-y-3 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
+      <div className="relative lg:w-72">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
         <input
           type="text"
@@ -113,8 +114,7 @@ export default function MisQRsPage() {
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
         {["", "PENDIENTE", "ENVIADO", "INGRESADO", "INVALIDADO"].map((estado) => (
           <button
             key={estado}
@@ -128,6 +128,7 @@ export default function MisQRsPage() {
             {estado || "Todas"}
           </button>
         ))}
+      </div>
       </div>
 
       {/* Counter */}
@@ -159,7 +160,7 @@ export default function MisQRsPage() {
                     className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <p className="font-medium text-dark-100 truncate max-w-[160px]">{entrada.nombreInvitado}</p>
+                      <p className="font-medium text-dark-100 truncate max-w-[160px] lg:max-w-none">{entrada.nombreInvitado}</p>
                       <p className="text-xs text-dark-500 sm:hidden">{entrada.dniInvitado}</p>
                       <p className="text-xs text-dark-500 md:hidden mt-0.5">{entrada.evento.nombre}</p>
                     </td>

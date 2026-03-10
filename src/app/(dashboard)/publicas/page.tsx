@@ -178,18 +178,8 @@ export default function PublicasPage() {
         }
       />
 
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
-        <input
-          type="text"
-          placeholder="Buscar por nombre o DNI..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl pl-9 pr-4 py-2.5 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
-        />
-      </div>
-
+      <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-6 space-y-4 lg:space-y-0">
+      <div className="space-y-4">
       {/* Event calendar filter */}
       <EventCalendar
         eventos={eventos}
@@ -205,6 +195,20 @@ export default function PublicasPage() {
       />
 
       {/* Status pills */}
+      </div>
+
+      <div className="space-y-4">
+      {/* Search */}
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
+        <input
+          type="text"
+          placeholder="Buscar por nombre o DNI..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl pl-9 pr-4 py-2.5 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
+        />
+      </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {["", "PENDIENTE", "ENVIADO", "INGRESADO", "INVALIDADO"].map((estado) => (
           <button
@@ -247,7 +251,7 @@ export default function PublicasPage() {
                     onClick={() => setSelected(entrada)}
                     className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
                   >
-                    <td className="px-4 py-3 text-dark-100 font-medium truncate max-w-[140px]">
+                    <td className="px-4 py-3 text-dark-100 font-medium truncate max-w-[140px] lg:max-w-[240px]">
                       {entrada.nombreInvitado}
                     </td>
                     <td className="px-4 py-3 text-dark-300 text-xs font-mono">
@@ -295,6 +299,8 @@ export default function PublicasPage() {
           description="No se encontraron entradas con esos filtros"
         />
       )}
+      </div>
+      </div>
 
       {/* Detail modal */}
       <Modal open={!!selected} onClose={() => setSelected(null)} title="Detalle de entrada">

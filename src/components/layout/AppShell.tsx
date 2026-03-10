@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "./BottomNav";
 import { TopBar } from "./TopBar";
+import { Sidebar } from "./Sidebar";
 
 type UserRole = "admin" | "rrpp" | "portero";
 
@@ -30,6 +31,9 @@ export function AppShell({
 
   return (
     <div className="min-h-[100dvh] bg-dark-900">
+      {/* Desktop sidebar */}
+      <Sidebar role={role} bolicheName={bolicheName} />
+
       <TopBar
         bolicheName={bolicheName}
         userName={userName}
@@ -40,8 +44,9 @@ export function AppShell({
 
       <main
         className={cn(
-          "pt-14 px-4 max-w-lg mx-auto",
-          hasBottomNav ? "pb-24" : "pb-6",
+          "pt-14 px-4 lg:pl-64 lg:px-8 xl:px-12",
+          "max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:max-w-[calc(100%-240px)]",
+          hasBottomNav ? "pb-24 lg:pb-8" : "pb-6",
           className
         )}
         style={{
@@ -51,7 +56,9 @@ export function AppShell({
             : undefined,
         }}
       >
-        {children}
+        <div className="lg:max-w-5xl">
+          {children}
+        </div>
       </main>
 
       {hasBottomNav && <BottomNav role={role} />}

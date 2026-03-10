@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
       />
       <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
+      <div className="relative z-10 flex w-full max-w-sm lg:max-w-md flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-1">
           <h1 className="text-4xl font-bold tracking-[0.3em] gold-text">CRUZ</h1>
           <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">Espacio</p>

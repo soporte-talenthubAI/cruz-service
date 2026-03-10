@@ -112,7 +112,7 @@ export default function NuevoQRPage() {
   // Show QR after creation
   if (entradaCreada) {
     return (
-      <div className="space-y-4 animate-fade-in">
+      <div className="space-y-4 animate-fade-in lg:max-w-2xl lg:mx-auto">
         <PageHeader title="Entrada creada" />
         <QRDisplay
           eventName={entradaCreada.evento.nombre}

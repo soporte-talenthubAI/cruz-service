@@ -10,6 +10,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { formatTime12h } from "@/lib/utils";
 
 interface Evento {
   id: string;
@@ -93,7 +94,7 @@ export default function InicioPage() {
       <Button
         variant="gold"
         size="lg"
-        className="w-full"
+        className="w-full lg:w-auto lg:px-12"
         leftIcon={<QrCode size={20} />}
         onClick={() => router.push("/nuevo-qr")}
       >
@@ -103,13 +104,13 @@ export default function InicioPage() {
       <div>
         <h3 className="text-sm font-medium text-dark-300 mb-3">Eventos activos</h3>
         {eventos.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
             {eventos.map((e) => (
               <EventCard
                 key={e.id}
                 name={e.nombre}
                 date={new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-                time={e.horaApertura}
+                time={formatTime12h(e.horaApertura)}
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}
                 ticketsSold={e.stats.total}

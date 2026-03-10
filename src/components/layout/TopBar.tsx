@@ -57,10 +57,12 @@ export function TopBar({
       )}
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
-        <span className="text-xl font-bold gold-text tracking-wider">
+      <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto lg:max-w-none lg:ml-60 lg:px-8 xl:px-12">
+        <span className="text-xl font-bold gold-text tracking-wider lg:hidden">
           {bolicheName}
         </span>
+        {/* Desktop spacer where sidebar logo is */}
+        <span className="hidden lg:block" />
 
         <div className="flex items-center gap-3" ref={menuRef}>
           <span className="hidden sm:block text-sm text-dark-300">

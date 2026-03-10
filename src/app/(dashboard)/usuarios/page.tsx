@@ -203,7 +203,7 @@ export default function UsuariosPage() {
 
       {/* List */}
       {filtered.length > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
           {filtered.map((user) => (
             <div
               key={user.id}
@@ -231,7 +231,7 @@ export default function UsuariosPage() {
               <div className="flex flex-col gap-1.5 shrink-0">
                 <button
                   onClick={() => handleToggleActive(user)}
-                  className={`text-[10px] px-2 py-1 rounded-lg font-medium transition-colors ${
+                  className={`text-[10px] lg:text-xs px-2 lg:px-3 py-1 rounded-lg font-medium transition-colors ${
                     user.activo
                       ? "bg-error/10 text-error hover:bg-error/20"
                       : "bg-success/10 text-success hover:bg-success/20"
@@ -241,7 +241,7 @@ export default function UsuariosPage() {
                 </button>
                 <button
                   onClick={() => handleResendWelcome(user)}
-                  className="text-[10px] px-2 py-1 rounded-lg font-medium bg-surface-2 text-dark-400 hover:text-dark-200 transition-colors flex items-center gap-1"
+                  className="text-[10px] lg:text-xs px-2 lg:px-3 py-1 rounded-lg font-medium bg-surface-2 text-dark-400 hover:text-dark-200 transition-colors flex items-center gap-1"
                 >
                   <Mail size={10} />
                   Reenviar

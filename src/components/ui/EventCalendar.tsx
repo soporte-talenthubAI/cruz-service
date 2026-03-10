@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatTime12h } from "@/lib/utils";
 
 export interface CalendarEvent {
   id: string;
@@ -112,7 +112,7 @@ export function EventCalendar({
                 day: "numeric",
                 month: "short",
               })}
-              {selectedEvento.horaApertura && ` — ${selectedEvento.horaApertura}`}
+              {selectedEvento.horaApertura && ` — ${formatTime12h(selectedEvento.horaApertura)}`}
             </p>
           </div>
           <button
@@ -245,7 +245,7 @@ export function EventCalendar({
                   {ev.horaApertura && (
                     <div className="flex items-center gap-1 text-dark-400 shrink-0">
                       <Clock size={12} />
-                      <span className="text-xs">{ev.horaApertura}</span>
+                      <span className="text-xs">{formatTime12h(ev.horaApertura)}</span>
                     </div>
                   )}
                 </div>
