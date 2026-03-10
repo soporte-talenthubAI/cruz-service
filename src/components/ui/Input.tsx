@@ -85,9 +85,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 shouldFloat
                   ? "top-2 text-[11px] text-gold-500"
                   : "top-1/2 -translate-y-1/2 text-dark-400 text-base",
-                // CSS fallback: float label when input has content (autofill)
+                // CSS fallback: float label when input has content (autofill / browser-filled)
                 !shouldFloat &&
-                  "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:text-gold-500 peer-[:not(:placeholder-shown)]:translate-y-0"
+                  "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:text-gold-500 peer-[:not(:placeholder-shown)]:translate-y-0",
+                // Chrome/Safari autofill detection
+                !shouldFloat &&
+                  "peer-[:-webkit-autofill]:top-2 peer-[:-webkit-autofill]:text-[11px] peer-[:-webkit-autofill]:text-gold-500 peer-[:-webkit-autofill]:translate-y-0"
               )}
             >
               {label}

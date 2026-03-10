@@ -44,8 +44,8 @@ export function AppShell({
 
       <main
         className={cn(
-          "pt-14 px-4 lg:pl-64 lg:px-8 xl:px-12",
-          "max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:max-w-[calc(100%-240px)]",
+          "pt-14 px-4",
+          "max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:ml-60 lg:px-8 xl:px-12",
           hasBottomNav ? "pb-24 lg:pb-8" : "pb-6",
           className
         )}
