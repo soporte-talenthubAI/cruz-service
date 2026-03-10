@@ -60,7 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "input-dark peer",
               leftIcon && "pl-11",
               (rightIcon || isPassword) && "pr-11",
-              label && "pt-5 pb-2",
+              label && "pt-6 pb-1",
               error && "!border-error focus:!border-error focus:!shadow-[0_0_0_2px_rgba(239,68,68,0.15)]",
               success && "!border-success focus:!border-success focus:!shadow-[0_0_0_2px_rgba(16,185,129,0.15)]",
               className
@@ -83,14 +83,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 "absolute left-4 transition-all duration-200 pointer-events-none",
                 leftIcon && "left-11",
                 shouldFloat
-                  ? "top-2 text-[11px] text-gold-500"
+                  ? "top-1.5 text-[11px] text-gold-500"
                   : "top-1/2 -translate-y-1/2 text-dark-400 text-base",
                 // CSS fallback: float label when input has content (autofill / browser-filled)
                 !shouldFloat &&
-                  "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:text-gold-500 peer-[:not(:placeholder-shown)]:translate-y-0",
+                  "peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:text-gold-500 peer-[:not(:placeholder-shown)]:translate-y-0",
                 // Chrome/Safari autofill detection
                 !shouldFloat &&
-                  "peer-[:-webkit-autofill]:top-2 peer-[:-webkit-autofill]:text-[11px] peer-[:-webkit-autofill]:text-gold-500 peer-[:-webkit-autofill]:translate-y-0"
+                  "peer-[:-webkit-autofill]:top-1.5 peer-[:-webkit-autofill]:text-[11px] peer-[:-webkit-autofill]:text-gold-500 peer-[:-webkit-autofill]:translate-y-0"
               )}
             >
               {label}
