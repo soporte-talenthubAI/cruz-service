@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { DollarSign, FileSpreadsheet, FileText, Printer } from "lucide-react";
+import { DollarSign, FileSpreadsheet, FileText, Printer, Filter } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -38,6 +38,7 @@ export default function LiquidacionesPage() {
   const [exporting, setExporting] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
+  const [selectedRrppId, setSelectedRrppId] = useState("");
 
   useEffect(() => {
     async function fetchEventos() {
@@ -77,15 +78,36 @@ export default function LiquidacionesPage() {
     if (eventoId) fetchLiquidaciones(eventoId);
   }, [eventoId, fetchLiquidaciones]);
 
+  // Reset RRPP filter when event changes
+  useEffect(() => {
+    setSelectedRrppId("");
+  }, [eventoId]);
+
+  // Filtered liquidaciones based on selected RRPP
+  const filtered = useMemo(() => {
+    if (!data) return null;
+    const liqs = selectedRrppId
+      ? data.liquidaciones.filter((l) => l.rrpp.id === selectedRrppId)
+      : data.liquidaciones;
+    const totales = {
+      totalIngresadas: liqs.reduce((sum, l) => sum + l.totalIngresadas, 0),
+      montoTotal: liqs.reduce((sum, l) => sum + l.montoAPagar, 0),
+    };
+    return { liquidaciones: liqs, totales };
+  }, [data, selectedRrppId]);
+
   const handleExport = async (format: "excel" | "pdf") => {
-    if (!data) return;
+    if (!data || !filtered) return;
     setExporting(true);
     try {
-      const filename = `liquidacion-${data.evento.nombre.replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
+      const selectedName = selectedRrppId
+        ? filtered.liquidaciones[0]?.rrpp.nombre.replace(/\s+/g, "-").toLowerCase()
+        : data.evento.nombre.replace(/\s+/g, "-").toLowerCase();
+      const filename = `liquidacion-${selectedName}-${new Date().toISOString().slice(0, 10)}`;
       if (format === "excel") {
-        await exportLiquidacionesToExcel(data.liquidaciones, data.evento.nombre, data.totales, `${filename}.xlsx`);
+        await exportLiquidacionesToExcel(filtered.liquidaciones, data.evento.nombre, filtered.totales, `${filename}.xlsx`);
       } else {
-        await exportLiquidacionesToPdf(data.liquidaciones, data.evento.nombre, data.totales, `${filename}.pdf`);
+        await exportLiquidacionesToPdf(filtered.liquidaciones, data.evento.nombre, filtered.totales, `${filename}.pdf`);
       }
     } catch {
       // silently fail
@@ -146,26 +168,56 @@ export default function LiquidacionesPage() {
       <div className="space-y-4">
       {loadingLiq && <Spinner />}
 
-      {!loadingLiq && data && (
+      {!loadingLiq && data && filtered && (
         <>
+          {/* RRPP filter */}
+          {data.liquidaciones.length > 1 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter size={14} className="text-dark-400 shrink-0" />
+              <button
+                onClick={() => setSelectedRrppId("")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedRrppId === ""
+                    ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
+                    : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
+                }`}
+              >
+                Todos
+              </button>
+              {data.liquidaciones.map((l) => (
+                <button
+                  key={l.rrpp.id}
+                  onClick={() => setSelectedRrppId(l.rrpp.id === selectedRrppId ? "" : l.rrpp.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedRrppId === l.rrpp.id
+                      ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
+                      : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
+                  }`}
+                >
+                  {l.rrpp.nombre}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Summary cards */}
           <div className="grid grid-cols-2 gap-3">
             <div className="glass-card p-4 text-center">
               <p className="text-2xl font-bold text-gold-500">
-                ${data.totales.montoTotal.toLocaleString("es-AR")}
+                ${filtered.totales.montoTotal.toLocaleString("es-AR")}
               </p>
               <p className="text-xs text-dark-400 mt-1">Total a pagar</p>
             </div>
             <div className="glass-card p-4 text-center">
               <p className="text-2xl font-bold text-dark-100">
-                {data.totales.totalIngresadas}
+                {filtered.totales.totalIngresadas}
               </p>
               <p className="text-xs text-dark-400 mt-1">QRs ingresados</p>
             </div>
           </div>
 
           {/* Table */}
-          {data.liquidaciones.length > 0 ? (
+          {filtered.liquidaciones.length > 0 ? (
             <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
               <table className="w-full text-sm">
                 <thead>
@@ -179,7 +231,7 @@ export default function LiquidacionesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.liquidaciones.map((l) => (
+                  {filtered.liquidaciones.map((l) => (
                     <tr
                       key={l.rrpp.id}
                       className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 transition-colors"
@@ -230,10 +282,10 @@ export default function LiquidacionesPage() {
                     <td className="px-4 py-3" />
                     <td className="px-4 py-3 hidden sm:table-cell" />
                     <td className="px-4 py-3 text-right text-dark-200 font-bold">
-                      {data.totales.totalIngresadas}
+                      {filtered.totales.totalIngresadas}
                     </td>
                     <td className="px-4 py-3 text-right text-gold-500 font-bold text-lg">
-                      ${data.totales.montoTotal.toLocaleString("es-AR")}
+                      ${filtered.totales.montoTotal.toLocaleString("es-AR")}
                     </td>
                     <td className="px-2 py-3" />
                   </tr>
