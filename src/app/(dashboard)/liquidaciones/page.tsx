@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/Button";
 import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
 import { exportLiquidacionesToExcel, exportLiquidacionesToPdf, exportRrppDetailPdf } from "@/lib/export";
 
+interface RrppUser {
+  id: string;
+  nombre: string;
+}
+
 interface Liquidacion {
   rrpp: { id: string; nombre: string; email: string };
   montoPorQr: number;
@@ -30,6 +35,7 @@ export default function LiquidacionesPage() {
   const now = new Date();
 
   const [eventos, setEventos] = useState<CalendarEvent[]>([]);
+  const [rrppUsers, setRrppUsers] = useState<RrppUser[]>([]);
   const [eventoId, setEventoId] = useState(initialEventoId);
   const [data, setData] = useState<LiquidacionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +63,25 @@ export default function LiquidacionesPage() {
     fetchEventos();
   }, [currentMonth, currentYear]);
 
+  useEffect(() => {
+    async function fetchRrppUsers() {
+      try {
+        const res = await fetch("/api/usuarios");
+        const json = await res.json();
+        if (res.ok) {
+          setRrppUsers(
+            (json.data || []).filter(
+              (u: { rol: string; activo: boolean }) => u.rol === "RRPP" && u.activo
+            )
+          );
+        }
+      } catch {
+        // silently fail
+      }
+    }
+    fetchRrppUsers();
+  }, []);
+
   const fetchLiquidaciones = useCallback(async (id: string) => {
     if (!id) {
       setData(null);
@@ -75,7 +100,7 @@ export default function LiquidacionesPage() {
   }, []);
 
   useEffect(() => {
-    if (eventoId) fetchLiquidaciones(eventoId);
+    fetchLiquidaciones(eventoId);
   }, [eventoId, fetchLiquidaciones]);
 
   // Reset RRPP filter when event changes
@@ -171,7 +196,7 @@ export default function LiquidacionesPage() {
       {!loadingLiq && data && filtered && (
         <>
           {/* RRPP filter */}
-          {data.liquidaciones.length > 1 && (
+          {rrppUsers.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
               <Filter size={14} className="text-dark-400 shrink-0" />
               <button
@@ -184,17 +209,17 @@ export default function LiquidacionesPage() {
               >
                 Todos
               </button>
-              {data.liquidaciones.map((l) => (
+              {rrppUsers.map((u) => (
                 <button
-                  key={l.rrpp.id}
-                  onClick={() => setSelectedRrppId(l.rrpp.id === selectedRrppId ? "" : l.rrpp.id)}
+                  key={u.id}
+                  onClick={() => setSelectedRrppId(u.id === selectedRrppId ? "" : u.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRrppId === l.rrpp.id
+                    selectedRrppId === u.id
                       ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
                       : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
                   }`}
                 >
-                  {l.rrpp.nombre}
+                  {u.nombre}
                 </button>
               ))}
             </div>
