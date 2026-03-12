@@ -197,31 +197,18 @@ export default function LiquidacionesPage() {
         <>
           {/* RRPP filter */}
           {rrppUsers.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <Filter size={14} className="text-dark-400 shrink-0" />
-              <button
-                onClick={() => setSelectedRrppId("")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  selectedRrppId === ""
-                    ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
-                    : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
-                }`}
+              <select
+                value={selectedRrppId}
+                onChange={(e) => setSelectedRrppId(e.target.value)}
+                className="bg-surface-2 text-dark-200 text-sm rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors cursor-pointer"
               >
-                Todos
-              </button>
-              {rrppUsers.map((u) => (
-                <button
-                  key={u.id}
-                  onClick={() => setSelectedRrppId(u.id === selectedRrppId ? "" : u.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRrppId === u.id
-                      ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
-                      : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
-                  }`}
-                >
-                  {u.nombre}
-                </button>
-              ))}
+                <option value="">Todos los RRPP</option>
+                {rrppUsers.map((u) => (
+                  <option key={u.id} value={u.id}>{u.nombre}</option>
+                ))}
+              </select>
             </div>
           )}
 
