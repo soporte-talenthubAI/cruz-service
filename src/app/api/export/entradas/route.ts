@@ -14,11 +14,13 @@ export async function GET(request: NextRequest) {
     const eventoId = searchParams.get("eventoId");
     const estado = searchParams.get("estado");
     const search = searchParams.get("search");
+    const rrppId = searchParams.get("rrppId");
 
     const where: Record<string, unknown> = {};
 
     if (eventoId) where.eventoId = eventoId;
     if (estado) where.estado = estado;
+    if (rrppId) where.generadoPorId = rrppId;
 
     if (search) {
       where.OR = [

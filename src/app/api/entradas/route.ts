@@ -23,8 +23,11 @@ export async function GET(request: NextRequest) {
 
     const where: Record<string, unknown> = {};
 
+    const rrppId = searchParams.get("rrppId");
+
     if (eventoId) where.eventoId = eventoId;
     if (estado) where.estado = estado;
+    if (rrppId && userRole === "ADMIN") where.generadoPorId = rrppId;
 
     // Search by name or DNI
     if (search) {

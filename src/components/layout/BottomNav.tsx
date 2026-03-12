@@ -6,12 +6,11 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
-  Users,
+  Ticket,
   ScanLine,
   UserCircle,
   Home,
   QrCode,
-  Ticket,
   ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,7 +29,7 @@ const navItems: Record<UserRole, NavItem[]> = {
     { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={22} /> },
     { href: "/eventos", label: "Eventos", icon: <Calendar size={22} /> },
     { href: "/nuevo-qr", label: "Nuevo QR", icon: <QrCode size={22} />, central: true },
-    { href: "/publicas", label: "Publicas", icon: <Users size={22} /> },
+    { href: "/publicas", label: "Entradas", icon: <Ticket size={22} /> },
     { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
   ],
   rrpp: [

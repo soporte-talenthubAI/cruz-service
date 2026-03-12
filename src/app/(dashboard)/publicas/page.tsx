@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, FileSpreadsheet, FileText } from "lucide-react";
+import { Search, FileSpreadsheet, FileText, Filter } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -24,6 +24,11 @@ interface Entrada {
   generadoPor: { nombre: string };
 }
 
+interface RrppUser {
+  id: string;
+  nombre: string;
+}
+
 const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "invalidado"> = {
   PENDIENTE: "pendiente",
   ENVIADO: "enviado",
@@ -35,6 +40,7 @@ export default function PublicasPage() {
   const now = new Date();
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [eventos, setEventos] = useState<CalendarEvent[]>([]);
+  const [rrppUsers, setRrppUsers] = useState<RrppUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadingEventos, setLoadingEventos] = useState(false);
@@ -43,6 +49,7 @@ export default function PublicasPage() {
   const [total, setTotal] = useState(0);
   const [filtroEvento, setFiltroEvento] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroRrpp, setFiltroRrpp] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Entrada | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -55,6 +62,7 @@ export default function PublicasPage() {
       const params = new URLSearchParams();
       if (filtroEvento) params.set("eventoId", filtroEvento);
       if (filtroEstado) params.set("estado", filtroEstado);
+      if (filtroRrpp) params.set("rrppId", filtroRrpp);
       if (searchQuery) params.set("search", searchQuery);
 
       const res = await fetch(`/api/export/entradas?${params}`);
@@ -86,6 +94,7 @@ export default function PublicasPage() {
       });
       if (filtroEvento) params.set("eventoId", filtroEvento);
       if (filtroEstado) params.set("estado", filtroEstado);
+      if (filtroRrpp) params.set("rrppId", filtroRrpp);
       if (searchQuery) params.set("search", searchQuery);
 
       const res = await fetch(`/api/entradas?${params}`);
@@ -105,7 +114,7 @@ export default function PublicasPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [filtroEvento, filtroEstado, searchQuery]);
+  }, [filtroEvento, filtroEstado, filtroRrpp, searchQuery]);
 
   const fetchEventos = useCallback(async (m: number, y: number) => {
     setLoadingEventos(true);
@@ -120,9 +129,24 @@ export default function PublicasPage() {
     }
   }, []);
 
+  const fetchRrppUsers = useCallback(async () => {
+    try {
+      const res = await fetch("/api/usuarios");
+      const json = await res.json();
+      if (res.ok) {
+        const rrpp = (json.data || []).filter(
+          (u: { rol: string; activo: boolean }) => u.rol === "RRPP" && u.activo
+        );
+        setRrppUsers(rrpp);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
+
   useEffect(() => {
     async function init() {
-      await Promise.all([fetchEntradas(1), fetchEventos(calMonth, calYear)]);
+      await Promise.all([fetchEntradas(1), fetchEventos(calMonth, calYear), fetchRrppUsers()]);
       setLoading(false);
     }
     init();
@@ -139,7 +163,7 @@ export default function PublicasPage() {
     setPage(1);
     setEntradas([]);
     fetchEntradas(1);
-  }, [filtroEvento, filtroEstado, searchQuery, fetchEntradas]);
+  }, [filtroEvento, filtroEstado, filtroRrpp, searchQuery, fetchEntradas]);
 
   const loadMore = () => {
     const next = page + 1;
@@ -209,6 +233,38 @@ export default function PublicasPage() {
           className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl pl-9 pr-4 py-2.5 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors"
         />
       </div>
+
+      {/* RRPP filter */}
+      {rrppUsers.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <Filter size={14} className="text-dark-400 shrink-0" />
+          <button
+            onClick={() => setFiltroRrpp("")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filtroRrpp === ""
+                ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
+                : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
+            }`}
+          >
+            Todos los RRPP
+          </button>
+          {rrppUsers.map((u) => (
+            <button
+              key={u.id}
+              onClick={() => setFiltroRrpp(u.id === filtroRrpp ? "" : u.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                filtroRrpp === u.id
+                  ? "bg-gold-500/20 text-gold-500 border border-gold-500/30"
+                  : "bg-surface-2 text-dark-400 border border-[rgba(255,255,255,0.06)] hover:text-dark-200"
+              }`}
+            >
+              {u.nombre}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Status filter */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {["", "PENDIENTE", "ENVIADO", "INGRESADO", "INVALIDADO"].map((estado) => (
           <button
