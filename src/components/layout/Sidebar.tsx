@@ -13,6 +13,7 @@ import {
   ClipboardList,
   DollarSign,
   UsersRound,
+  Armchair,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ReactNode } from "react";
@@ -34,6 +35,7 @@ const sidebarItems: Record<UserRole, SidebarNavItem[]> = {
     { href: "/publicas", label: "Entradas", icon: <Ticket size={20} /> },
     { href: "/usuarios", label: "Usuarios", icon: <UsersRound size={20} /> },
     { href: "/liquidaciones", label: "Liquidaciones", icon: <DollarSign size={20} /> },
+    { href: "/reservas", label: "Reservas", icon: <Armchair size={20} /> },
     { href: "/perfil", label: "Mi cuenta", icon: <UserCircle size={20} /> },
   ],
   rrpp: [
