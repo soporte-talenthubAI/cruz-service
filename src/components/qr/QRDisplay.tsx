@@ -176,32 +176,29 @@ export function QRDisplay({
           <Badge variant={status}>{status.toUpperCase()}</Badge>
         </div>
 
-        {/* Header with background */}
-        <div className="relative h-32 overflow-hidden">
+        {/* Header with background + event name overlay */}
+        <div className="relative h-36 overflow-hidden">
           {bgUrl.startsWith("/") ? (
             <Image src={bgUrl} alt="" fill className="object-cover" quality={80} />
           ) : (
             <img src={bgUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
           )}
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative z-10 flex flex-col items-center justify-center h-full">
-            <span className="text-2xl font-bold tracking-[0.3em]" style={{ color: accentColor }}>
-              CRUZ
-            </span>
-            <span className="text-[10px] tracking-[0.25em] text-dark-300 uppercase">
-              Espacio
-            </span>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70" />
+          <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
+            <h3
+              className="text-xl sm:text-2xl font-bold leading-tight line-clamp-2"
+              style={{ color: textColor, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+            >
+              {eventName}
+            </h3>
           </div>
         </div>
 
-        {/* Event info */}
-        <div className="bg-surface-1 p-5 pb-3">
-          <h3 className="text-lg font-bold" style={{ color: textColor }}>{eventName}</h3>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-sm font-medium" style={{ color: accentColor }}>{eventDate}</span>
-            <span className="text-dark-600">•</span>
-            <span className="text-sm font-medium" style={{ color: accentColor }}>{eventTime}</span>
-          </div>
+        {/* Event date / time */}
+        <div className="bg-surface-1 px-5 pt-4 pb-3 flex items-center justify-center gap-3">
+          <span className="text-sm font-medium" style={{ color: accentColor }}>{eventDate}</span>
+          <span className="text-dark-600">•</span>
+          <span className="text-sm font-medium" style={{ color: accentColor }}>{eventTime}</span>
         </div>
 
         {/* QR Code */}

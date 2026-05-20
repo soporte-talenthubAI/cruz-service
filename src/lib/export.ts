@@ -162,12 +162,12 @@ export async function exportLiquidacionesToPdf(
   doc.setFillColor(...dark);
   doc.rect(0, 0, pageWidth, 35, "F");
   doc.setTextColor(gold[0], gold[1], gold[2]);
-  doc.setFontSize(22);
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("CRUZ", 14, 18);
-  doc.setFontSize(8);
+  doc.text("GESTOR", 14, 18);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("ESPACIO", 14, 24);
+  doc.text("DE INGRESO", 14, 24);
   doc.setTextColor(200, 200, 200);
   doc.setFontSize(10);
   doc.text("Liquidación de RRPP", pageWidth - 14, 15, { align: "right" });
@@ -233,7 +233,7 @@ export async function exportLiquidacionesToPdf(
   doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
   doc.setFontSize(7);
   doc.setTextColor(160, 160, 160);
-  doc.text("CRUZ Espacio — Sistema de Gestión", 14, footerY);
+  doc.text("Gestor de ingreso — Sistema de Gestión", 14, footerY);
   doc.text("Documento generado automáticamente", pageWidth - 14, footerY, { align: "right" });
 
   doc.save(filename);
@@ -263,12 +263,12 @@ export async function exportRrppDetailPdf(
   doc.setFillColor(...dark);
   doc.rect(0, 0, pageWidth, 35, "F");
   doc.setTextColor(gold[0], gold[1], gold[2]);
-  doc.setFontSize(22);
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("CRUZ", 14, 18);
-  doc.setFontSize(8);
+  doc.text("GESTOR", 14, 18);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("ESPACIO", 14, 24);
+  doc.text("DE INGRESO", 14, 24);
   doc.setTextColor(200, 200, 200);
   doc.setFontSize(10);
   doc.text("Recibo de Liquidación", pageWidth - 14, 15, { align: "right" });
@@ -337,7 +337,7 @@ export async function exportRrppDetailPdf(
   doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
   doc.setFontSize(7);
   doc.setTextColor(160, 160, 160);
-  doc.text("CRUZ Espacio — Sistema de Gestión", 14, footerY);
+  doc.text("Gestor de ingreso — Sistema de Gestión", 14, footerY);
   doc.text("Documento generado automáticamente", pageWidth - 14, footerY, { align: "right" });
 
   doc.save(filename);

@@ -16,7 +16,7 @@ interface TopBarProps {
 }
 
 export function TopBar({
-  bolicheName = "CRUZ",
+  bolicheName = "Gestor de ingreso",
   userName,
   userRole = "rrpp",
   userAvatar,
@@ -58,7 +58,7 @@ export function TopBar({
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto lg:max-w-none lg:ml-60 lg:px-8 xl:px-12">
-        <span className="text-xl font-bold gold-text tracking-wider lg:hidden">
+        <span className="text-base font-bold gold-text lg:hidden">
           {bolicheName}
         </span>
         {/* Desktop spacer where sidebar logo is */}

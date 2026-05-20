@@ -12,7 +12,7 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "Cruz Espacio <entradas@cruzespacio.com>";
+const FROM_EMAIL = process.env.FROM_EMAIL || "Gestor de Ingreso <onboarding@resend.dev>";
 
 // Base URL for images hosted in the app (needs to be absolute for emails)
 const APP_URL = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -44,7 +44,7 @@ export async function sendEntradaEmail(data: EntradaEmailData) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: `Tu entrada para ${data.eventoNombre} - Cruz Espacio`,
+    subject: `Tu entrada para ${data.eventoNombre}`,
     html: buildEntradaEmailHtml(data, qrImageUrl, bgImageUrl),
   });
 
@@ -108,7 +108,7 @@ function buildEntradaEmailHtml(
 
     <!-- Bottom -->
     <div style="padding:16px;text-align:center;border-top:1px solid #222;">
-      <p style="font-size:10px;color:#505050;margin:0;">Cruz Espacio — Sistema de Gestión</p>
+      <p style="font-size:10px;color:#505050;margin:0;">Gestor de Ingreso</p>
     </div>
 
   </div>
@@ -132,7 +132,7 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: "Restablecer contraseña - Cruz Espacio",
+    subject: "Restablecer contraseña - Gestor de Ingreso",
     html: buildPasswordResetEmailHtml(data),
   });
 
@@ -167,7 +167,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: "Bienvenido a Cruz Espacio — Configurá tu contraseña",
+    subject: "Bienvenido — Configurá tu contraseña",
     html: buildWelcomeEmailHtml({ ...data, rolDisplay: rolLabel[data.rol] || data.rol }),
   });
 
@@ -196,8 +196,8 @@ function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }):
           <!-- Logo -->
           <tr>
             <td style="padding:32px 0;text-align:center;">
-              <div style="font-size:28px;font-weight:700;letter-spacing:6px;color:#C5A059;">CRUZ</div>
-              <div style="font-size:11px;letter-spacing:4px;color:#A0A0A0;margin-top:4px;">ESPACIO</div>
+              <div style="font-size:22px;font-weight:700;letter-spacing:4px;color:#C5A059;">GESTOR</div>
+              <div style="font-size:10px;letter-spacing:3px;color:#A0A0A0;margin-top:4px;">DE INGRESO</div>
             </td>
           </tr>
 
@@ -206,7 +206,7 @@ function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }):
             <td style="background-color:#111111;border:1px solid #333;border-radius:16px;padding:32px 24px;">
               <div style="font-size:18px;font-weight:700;color:#E8E8E8;margin-bottom:12px;">Bienvenido, ${data.nombre}</div>
               <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:8px;">
-                Se creó tu cuenta en Cruz Espacio con el rol de <strong style="color:#C5A059;">${data.rolDisplay}</strong>.
+                Se creó tu cuenta con el rol de <strong style="color:#C5A059;">${data.rolDisplay}</strong>.
               </div>
               <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:24px;">
                 Para empezar, configurá tu contraseña haciendo click en el botón:
@@ -229,7 +229,7 @@ function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }):
           <!-- Footer -->
           <tr>
             <td style="padding:20px 0;text-align:center;">
-              <div style="font-size:10px;color:#333333;">Cruz Espacio — Sistema de Gestión</div>
+              <div style="font-size:10px;color:#333333;">Gestor de Ingreso</div>
             </td>
           </tr>
 
@@ -258,8 +258,8 @@ function buildPasswordResetEmailHtml(data: PasswordResetEmailData): string {
           <!-- Logo -->
           <tr>
             <td style="padding:32px 0;text-align:center;">
-              <div style="font-size:28px;font-weight:700;letter-spacing:6px;color:#C5A059;">CRUZ</div>
-              <div style="font-size:11px;letter-spacing:4px;color:#A0A0A0;margin-top:4px;">ESPACIO</div>
+              <div style="font-size:22px;font-weight:700;letter-spacing:4px;color:#C5A059;">GESTOR</div>
+              <div style="font-size:10px;letter-spacing:3px;color:#A0A0A0;margin-top:4px;">DE INGRESO</div>
             </td>
           </tr>
 
@@ -288,7 +288,7 @@ function buildPasswordResetEmailHtml(data: PasswordResetEmailData): string {
           <!-- Footer -->
           <tr>
             <td style="padding:20px 0;text-align:center;">
-              <div style="font-size:10px;color:#333333;">Cruz Espacio — Sistema de Gestión</div>
+              <div style="font-size:10px;color:#333333;">Gestor de Ingreso</div>
             </td>
           </tr>
 

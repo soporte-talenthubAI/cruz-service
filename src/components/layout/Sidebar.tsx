@@ -57,7 +57,7 @@ interface SidebarProps {
   bolicheName?: string;
 }
 
-export function Sidebar({ role, bolicheName = "CRUZ" }: SidebarProps) {
+export function Sidebar({ role, bolicheName = "Gestor de ingreso" }: SidebarProps) {
   const pathname = usePathname();
   const items = sidebarItems[role];
 
@@ -65,7 +65,7 @@ export function Sidebar({ role, bolicheName = "CRUZ" }: SidebarProps) {
     <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-60 flex-col bg-surface-1 border-r border-[rgba(255,255,255,0.06)]">
       {/* Brand */}
       <div className="flex items-center h-14 px-6 border-b border-[rgba(255,255,255,0.06)]">
-        <span className="text-xl font-bold gold-text tracking-wider">
+        <span className="text-base font-bold gold-text">
           {bolicheName}
         </span>
       </div>
@@ -111,7 +111,7 @@ export function Sidebar({ role, bolicheName = "CRUZ" }: SidebarProps) {
       {/* Footer */}
       <div className="px-4 py-3 border-t border-[rgba(255,255,255,0.06)]">
         <p className="text-[10px] text-dark-600 text-center">
-          {bolicheName} &middot; Sistema de gestión
+          {bolicheName}
         </p>
       </div>
     </aside>

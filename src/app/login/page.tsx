@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Background image — CRUZ ESPACIO */}
+      {/* Background image */}
       <Image
         src="/images/fondo_app.png"
         alt=""
@@ -59,11 +59,11 @@ export default function LoginPage() {
       <div className="relative z-10 flex w-full max-w-sm lg:max-w-md flex-col items-center gap-8">
         {/* Logo */}
         <div className="flex flex-col items-center gap-1">
-          <h1 className="text-4xl font-bold tracking-[0.3em] gold-text">
-            CRUZ
+          <h1 className="text-3xl font-bold tracking-[0.25em] gold-text">
+            GESTOR
           </h1>
           <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">
-            Espacio
+            De Ingreso
           </p>
         </div>
 

@@ -54,8 +54,8 @@ export default function ForgotPasswordPage() {
 
       <div className="relative z-10 flex w-full max-w-sm lg:max-w-md flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-1">
-          <h1 className="text-4xl font-bold tracking-[0.3em] gold-text">CRUZ</h1>
-          <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">Espacio</p>
+          <h1 className="text-3xl font-bold tracking-[0.25em] gold-text">GESTOR</h1>
+          <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">De Ingreso</p>
         </div>
 
         <div className="glass-card w-full p-6 animate-slide-up">
