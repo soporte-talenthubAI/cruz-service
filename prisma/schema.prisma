@@ -38,6 +38,7 @@ model Usuario {
   entradas         Entrada[]        @relation("GeneradaPor")
   validaciones     Entrada[]        @relation("ValidadaPor")
   resetTokens      ResetToken[]
+  resetRequests    PasswordResetRequest[]
   eventosAsignados EventoUsuario[]
 }
 
@@ -50,6 +51,20 @@ model ResetToken {
 
   usuario   Usuario @relation(fields: [usuarioId], references: [id])
   usuarioId String
+}
+
+model PasswordResetRequest {
+  id          String    @id @default(cuid())
+  email       String
+  nota        String?
+  resuelto    Boolean   @default(false)
+  resueltoAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  usuarioId   String?
+  usuario     Usuario?  @relation(fields: [usuarioId], references: [id])
+
+  @@index([resuelto, createdAt])
 }
 
 model Evento {

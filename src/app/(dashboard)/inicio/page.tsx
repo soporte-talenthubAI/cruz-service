@@ -37,28 +37,16 @@ export default function InicioPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [eventosRes, entradasRes] = await Promise.all([
+        const [eventosRes, statsRes] = await Promise.all([
           fetch("/api/eventos?status=upcoming&limit=5"),
-          fetch("/api/entradas?limit=1"),
+          fetch("/api/stats/rrpp"),
         ]);
         const eventosData = await eventosRes.json();
-        const entradasData = await entradasRes.json();
+        const statsData = await statsRes.json();
         if (eventosRes.ok) setEventos(eventosData.data?.eventos || []);
-        if (entradasRes.ok) {
-          setTotalEntradas(entradasData.data?.meta?.total || 0);
-        }
-
-        // Fetch today's entries
-        const today = new Date().toISOString().split("T")[0];
-        const todayRes = await fetch(`/api/entradas?limit=1`);
-        const todayData = await todayRes.json();
-        if (todayRes.ok) {
-          // Count from total since API filters by RRPP already
-          const allEntradas = todayData.data?.entradas || [];
-          const todayCount = allEntradas.filter(
-            (e: { createdAt: string }) => e.createdAt.startsWith(today)
-          ).length;
-          setEntradasHoy(todayCount);
+        if (statsRes.ok) {
+          setTotalEntradas(statsData.data?.total || 0);
+          setEntradasHoy(statsData.data?.hoy || 0);
         }
       } catch {
         // silently fail

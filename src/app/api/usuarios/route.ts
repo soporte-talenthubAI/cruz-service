@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
-import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { sendWelcomeEmail } from "@/lib/email";
 import {
   successResponse,
   errorResponse,
@@ -38,9 +36,9 @@ export async function POST(request: NextRequest) {
     await requireRole("ADMIN");
 
     const body = await request.json();
-    const { email, nombre, rol } = body;
+    const { email, nombre, rol, password } = body;
 
-    if (!email || !nombre || !rol) {
+    if (!email || !nombre || !rol || !password) {
       return errorResponse("Faltan campos obligatorios");
     }
 
@@ -48,14 +46,16 @@ export async function POST(request: NextRequest) {
       return errorResponse("Rol inválido");
     }
 
+    if (typeof password !== "string" || password.length < 6) {
+      return errorResponse("La contraseña debe tener al menos 6 caracteres");
+    }
+
     const exists = await prisma.usuario.findUnique({ where: { email } });
     if (exists) {
       return errorResponse("Ya existe un usuario con ese email");
     }
 
-    // Generate a random temporary password (user will set their own via email)
-    const tempPassword = crypto.randomBytes(16).toString("hex");
-    const hashedPassword = await bcrypt.hash(tempPassword, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const usuario = await prisma.usuario.create({
       data: {
@@ -73,30 +73,6 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       },
     });
-
-    // Create a setup token (24 hours expiry)
-    const token = crypto.randomBytes(32).toString("hex");
-    await prisma.resetToken.create({
-      data: {
-        token,
-        usuarioId: usuario.id,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    });
-
-    const setupUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
-
-    // Send welcome email (don't fail the creation if email fails)
-    try {
-      await sendWelcomeEmail({
-        to: email,
-        nombre,
-        rol,
-        setupUrl,
-      });
-    } catch (emailError) {
-      console.error("Failed to send welcome email:", emailError);
-    }
 
     return successResponse(usuario, 201);
   } catch (error) {

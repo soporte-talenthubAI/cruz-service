@@ -45,7 +45,7 @@ export default function LoginPage() {
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 overflow-hidden">
       {/* Background image — CRUZ ESPACIO */}
       <Image
-        src="/images/cruz_espacio.jpg"
+        src="/images/fondo_app.png"
         alt=""
         fill
         priority

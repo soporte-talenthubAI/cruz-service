@@ -39,7 +39,7 @@ interface EntradaEmailData {
 export async function sendEntradaEmail(data: EntradaEmailData) {
   const resend = getResend();
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qrCode)}&bgcolor=FFFFFF&color=000000`;
-  const bgImageUrl = data.brandingBgUrl || `${APP_URL}/images/cruz_espacio.jpg`;
+  const bgImageUrl = data.brandingBgUrl || `${APP_URL}/images/fondo_app.png`;
 
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,

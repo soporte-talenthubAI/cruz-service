@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Search, Ticket, Users, Check, DollarSign } from "lucide-react";
+import { ArrowLeft, Search, Ticket, Users, Check, DollarSign, FileSpreadsheet, FileText, Pencil, Power } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,8 @@ import { formatTime12h } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+import { exportEntradasToExcel, exportEntradasToPdf } from "@/lib/export";
+import { EventFormModal } from "@/components/events/EventFormModal";
 
 interface RrppAsignado {
   id: string;
@@ -25,8 +27,12 @@ interface EventoDetalle {
   nombre: string;
   fecha: string;
   horaApertura: string;
-  tipo: string;
+  tipo: "NORMAL" | "ESPECIAL";
   capacidad: number;
+  activo: boolean;
+  brandingBgUrl?: string | null;
+  brandingColorPrimary?: string | null;
+  brandingColorText?: string | null;
   rrppAsignados: RrppAsignado[];
 }
 
@@ -94,6 +100,13 @@ export default function EventoDetallePage() {
   const [rrppList, setRrppList] = useState<RrppOption[]>([]);
   const [editRrpp, setEditRrpp] = useState<{ usuarioId: string; montoPorQr: number }[]>([]);
   const [savingRrpp, setSavingRrpp] = useState(false);
+
+  // Export
+  const [exporting, setExporting] = useState(false);
+
+  // Edit event modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [togglingActivo, setTogglingActivo] = useState(false);
 
   const fetchEntradas = async (pageNum: number, append = false) => {
     if (append) setLoadingMore(true);
@@ -217,6 +230,55 @@ export default function EventoDetallePage() {
     );
   };
 
+  const handleExport = useCallback(async (format: "excel" | "pdf") => {
+    if (!eventoDetalle) return;
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/export/entradas?eventoId=${id}`);
+      const json = await res.json();
+      if (!res.ok) return;
+      const entradas = json.data?.entradas || [];
+      const slug = eventoDetalle.nombre.replace(/\s+/g, "-").toLowerCase();
+      const filename = `entradas-${slug}-${new Date().toISOString().slice(0, 10)}`;
+      if (format === "excel") {
+        await exportEntradasToExcel(entradas, `${filename}.xlsx`);
+      } else {
+        await exportEntradasToPdf(entradas, `${filename}.pdf`);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setExporting(false);
+    }
+  }, [eventoDetalle, id]);
+
+  const handleToggleActivo = async () => {
+    if (!eventoDetalle) return;
+    const willDeactivate = eventoDetalle.activo;
+    const confirmMsg = willDeactivate
+      ? "¿Cancelar este evento? Se ocultará de la lista de próximos."
+      : "¿Reactivar este evento?";
+    if (!window.confirm(confirmMsg)) return;
+
+    setTogglingActivo(true);
+    try {
+      if (willDeactivate) {
+        await fetch(`/api/eventos/${id}`, { method: "DELETE" });
+      } else {
+        await fetch(`/api/eventos/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activo: true }),
+        });
+      }
+      fetchEventoDetalle();
+    } catch {
+      // silently fail
+    } finally {
+      setTogglingActivo(false);
+    }
+  };
+
   const handleSaveRrpp = async () => {
     setSavingRrpp(true);
     try {
@@ -254,7 +316,58 @@ export default function EventoDetallePage() {
       <PageHeader
         title={evento?.nombre || eventoDetalle?.nombre || "Evento"}
         subtitle={evento ? `${new Date(evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })} — ${formatTime12h(evento.horaApertura)}` : ""}
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            {eventoDetalle && (
+              <Button
+                variant="surface"
+                size="sm"
+                leftIcon={<Pencil size={14} />}
+                onClick={() => setShowEditModal(true)}
+              >
+                Editar
+              </Button>
+            )}
+            {entradas.length > 0 && (
+              <>
+                <Button
+                  variant="surface"
+                  size="sm"
+                  leftIcon={<FileSpreadsheet size={14} />}
+                  onClick={() => handleExport("excel")}
+                  disabled={exporting}
+                >
+                  Excel
+                </Button>
+                <Button
+                  variant="surface"
+                  size="sm"
+                  leftIcon={<FileText size={14} />}
+                  onClick={() => handleExport("pdf")}
+                  disabled={exporting}
+                >
+                  PDF
+                </Button>
+              </>
+            )}
+          </div>
+        }
       />
+
+      {eventoDetalle && !eventoDetalle.activo && (
+        <div className="rounded-xl bg-warning/10 border border-warning/30 p-3 text-sm text-warning flex items-center justify-between gap-3">
+          <span>Este evento está cancelado y oculto de la lista de próximos.</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<Power size={14} />}
+            onClick={handleToggleActivo}
+            loading={togglingActivo}
+          >
+            Reactivar
+          </Button>
+        </div>
+      )}
 
       {/* Event stats */}
       {evento && (
@@ -479,6 +592,40 @@ export default function EventoDetallePage() {
           Guardar cambios
         </Button>
       </Modal>
+
+      {/* Edit event modal */}
+      {eventoDetalle && (
+        <EventFormModal
+          open={showEditModal}
+          mode="edit"
+          initialData={eventoDetalle}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => {
+            fetchEventoDetalle();
+            fetchEventoStats();
+          }}
+        />
+      )}
+
+      {/* Danger zone — cancel event */}
+      {eventoDetalle?.activo && (
+        <div className="glass-card p-4 border-error/20 mt-6">
+          <h3 className="text-sm font-medium text-error mb-2">Zona de peligro</h3>
+          <p className="text-xs text-dark-500 mb-3">
+            Cancelar el evento lo oculta de la lista de próximos. Las entradas generadas siguen siendo válidas hasta que las invalides una por una.
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<Power size={14} />}
+            onClick={handleToggleActivo}
+            loading={togglingActivo}
+            className="text-error hover:bg-error/10"
+          >
+            Cancelar evento
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
