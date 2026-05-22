@@ -49,6 +49,7 @@ interface EntradaEmailData {
   brandingBgUrl?: string;
   brandingColorPrimary?: string;
   brandingColorText?: string;
+  brandingLayout?: "banner" | "centered" | "fullbg";
 }
 
 export async function sendEntradaEmail(data: EntradaEmailData) {
@@ -78,17 +79,28 @@ function buildEntradaEmailHtml(
   qrImageUrl: string
 ): string {
   const hasBranding = !!data.brandingBgUrl;
+  const layout: "banner" | "centered" | "fullbg" =
+    data.brandingLayout === "centered" || data.brandingLayout === "fullbg"
+      ? data.brandingLayout
+      : "banner";
+  const isCentered = layout === "centered";
+  const heroBg = isCentered ? (data.brandingColorPrimary || INK) : "transparent";
 
-  // Hero section: branding image if provided, otherwise wordmark on dark
+  // Note: email clients (Outlook in particular) don't reliably honor background-image
+  // on nested containers, so fullbg in email degrades to a banner-style hero.
+  // Banner / centered render via the heroBlock; fullbg uses the same hero but with
+  // a stronger overlay for visual parity.
   const heroBlock = hasBranding
     ? `
       <tr>
         <td style="padding:0;">
           <div style="
             background-image:url('${data.brandingBgUrl}');
-            background-size:cover;
+            background-size:${isCentered ? "contain" : "cover"};
             background-position:center;
-            height:160px;
+            background-repeat:no-repeat;
+            background-color:${heroBg};
+            height:200px;
             position:relative;
           ">
             <div style="

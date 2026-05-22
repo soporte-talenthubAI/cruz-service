@@ -27,6 +27,7 @@ export interface EventInitialData {
   brandingBgUrl?: string | null;
   brandingColorPrimary?: string | null;
   brandingColorText?: string | null;
+  brandingLayout?: "banner" | "centered" | "fullbg" | null;
   rrppAsignados?: { usuario: { id: string }; montoPorQr: number }[];
 }
 
@@ -55,6 +56,7 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
   const [brandingBgUrl, setBrandingBgUrl] = useState("");
   const [brandingColorPrimary, setBrandingColorPrimary] = useState("#C5A059");
   const [brandingColorText, setBrandingColorText] = useState("#FFFFFF");
+  const [brandingLayout, setBrandingLayout] = useState<"banner" | "centered" | "fullbg">("banner");
   const [uploading, setUploading] = useState(false);
 
   // Branding gallery
@@ -78,6 +80,11 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
       setBrandingBgUrl(initialData.brandingBgUrl || "");
       setBrandingColorPrimary(initialData.brandingColorPrimary || "#C5A059");
       setBrandingColorText(initialData.brandingColorText || "#FFFFFF");
+      setBrandingLayout(
+        initialData.brandingLayout === "centered" || initialData.brandingLayout === "fullbg"
+          ? initialData.brandingLayout
+          : "banner"
+      );
     } else {
       setNombre("");
       setFecha("");
@@ -87,6 +94,7 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
       setBrandingBgUrl("");
       setBrandingColorPrimary("#C5A059");
       setBrandingColorText("#FFFFFF");
+      setBrandingLayout("banner");
       setRrppAsignados([]);
     }
 
@@ -159,6 +167,7 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
         brandingBgUrl: brandingBgUrl || null,
         brandingColorPrimary,
         brandingColorText,
+        brandingLayout,
       };
 
       if (!isEdit) {
@@ -284,6 +293,9 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
               <label className="text-xs text-dark-400 mb-1 block">
                 {brandingGallery.length > 0 && !brandingBgUrl ? "O subir nueva imagen" : "Imagen de fondo"}
               </label>
+              <p className="text-[11px] text-dark-500 mb-2">
+                Recomendado: 1200×600px, formato apaisado (proporción 2:1)
+              </p>
               <div className="flex items-center gap-3">
                 <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-colors ${
                   brandingBgUrl
@@ -314,9 +326,43 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
                 )}
               </div>
               {brandingBgUrl && (
-                <div className="mt-2 rounded-xl overflow-hidden h-20">
-                  <img src={brandingBgUrl} alt="Preview" className="w-full h-full object-cover" />
-                </div>
+                <>
+                  <div className="mt-3">
+                    <label className="text-xs text-dark-400 mb-1.5 block">Disposición de la imagen</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <LayoutPresetCard
+                        active={brandingLayout === "banner"}
+                        onClick={() => setBrandingLayout("banner")}
+                        label="Banner"
+                        sublabel="Apaisado"
+                        thumbnail={<BannerThumb />}
+                      />
+                      <LayoutPresetCard
+                        active={brandingLayout === "centered"}
+                        onClick={() => setBrandingLayout("centered")}
+                        label="Flyer"
+                        sublabel="Centrado"
+                        thumbnail={<CenteredThumb color={brandingColorPrimary} />}
+                      />
+                      <LayoutPresetCard
+                        active={brandingLayout === "fullbg"}
+                        onClick={() => setBrandingLayout("fullbg")}
+                        label="Fondo"
+                        sublabel="Total"
+                        thumbnail={<FullBgThumb />}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="text-xs text-dark-400 mb-1.5 block">Vista previa</label>
+                    <LayoutPreview
+                      layout={brandingLayout}
+                      imageUrl={brandingBgUrl}
+                      eventName={nombre || "Nombre del evento"}
+                      primaryColor={brandingColorPrimary}
+                    />
+                  </div>
+                </>
               )}
             </div>
 
@@ -405,5 +451,132 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
         </Button>
       </form>
     </Modal>
+  );
+}
+
+// ============================================
+// Layout preset helpers
+// ============================================
+
+interface LayoutPresetCardProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  sublabel: string;
+  thumbnail: React.ReactNode;
+}
+
+function LayoutPresetCard({ active, onClick, label, sublabel, thumbnail }: LayoutPresetCardProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-colors ${
+        active
+          ? "bg-gold-500/10 border-gold-500/40"
+          : "bg-surface-2 border-dark-700 hover:border-dark-600"
+      }`}
+    >
+      <div className="w-full aspect-[4/3] rounded-lg overflow-hidden bg-[#0d0d0d] border border-dark-700">
+        {thumbnail}
+      </div>
+      <div className="text-center leading-tight">
+        <p className={`text-[11px] font-medium ${active ? "text-gold-500" : "text-dark-200"}`}>{label}</p>
+        <p className="text-[10px] text-dark-500">{sublabel}</p>
+      </div>
+    </button>
+  );
+}
+
+function BannerThumb() {
+  return (
+    <svg viewBox="0 0 80 60" className="w-full h-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="bn-g" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#9a9f93" />
+          <stop offset="100%" stopColor="#5e6258" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="80" height="60" fill="#0d0d0d" />
+      <rect x="0" y="0" width="80" height="22" fill="url(#bn-g)" />
+      <rect x="28" y="32" width="24" height="20" rx="2" fill="#ebf1e2" />
+    </svg>
+  );
+}
+
+function CenteredThumb({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 80 60" className="w-full h-full" preserveAspectRatio="none">
+      <rect x="0" y="0" width="80" height="60" fill="#0d0d0d" />
+      <rect x="0" y="0" width="80" height="22" fill={color} />
+      <rect x="32" y="4" width="16" height="14" fill="#9a9f93" />
+      <rect x="28" y="32" width="24" height="20" rx="2" fill="#ebf1e2" />
+    </svg>
+  );
+}
+
+function FullBgThumb() {
+  return (
+    <svg viewBox="0 0 80 60" className="w-full h-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="fb-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#9a9f93" />
+          <stop offset="100%" stopColor="#3f4239" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="80" height="60" fill="url(#fb-g)" />
+      <rect x="0" y="0" width="80" height="60" fill="#0d0d0d" opacity="0.65" />
+      <rect x="28" y="22" width="24" height="20" rx="2" fill="#ebf1e2" />
+    </svg>
+  );
+}
+
+interface LayoutPreviewProps {
+  layout: "banner" | "centered" | "fullbg";
+  imageUrl: string;
+  eventName: string;
+  primaryColor: string;
+}
+
+function LayoutPreview({ layout, imageUrl, eventName, primaryColor }: LayoutPreviewProps) {
+  if (layout === "fullbg") {
+    return (
+      <div className="relative rounded-xl overflow-hidden border border-dark-700 h-72">
+        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-[#0d0d0d]/75 backdrop-blur-[2px]" />
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 py-4 text-center gap-3">
+          <p className="text-lg font-bold text-[#ebf1e2] line-clamp-2">{eventName}</p>
+          <div className="bg-[#ebf1e2] rounded-lg p-2">
+            <div className="w-20 h-20 bg-[#0d0d0d]" />
+          </div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#9a9f93]">Documento · 12345678</p>
+        </div>
+      </div>
+    );
+  }
+
+  // banner & centered share the framing
+  return (
+    <div className="rounded-xl overflow-hidden border border-dark-700 bg-[#0d0d0d]">
+      <div
+        className="relative h-44 sm:h-52"
+        style={layout === "centered" ? { backgroundColor: primaryColor } : undefined}
+      >
+        <img
+          src={imageUrl}
+          alt=""
+          className={`absolute inset-0 w-full h-full ${layout === "centered" ? "object-contain" : "object-cover"}`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black/90" />
+        <div className="absolute inset-x-0 bottom-0 px-4 pb-3 text-center">
+          <p className="text-base sm:text-lg font-bold text-[#ebf1e2] line-clamp-2">{eventName}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-center py-4">
+        <div className="bg-[#ebf1e2] rounded-lg p-2">
+          <div className="w-16 h-16 bg-[#0d0d0d]" />
+        </div>
+      </div>
+    </div>
   );
 }

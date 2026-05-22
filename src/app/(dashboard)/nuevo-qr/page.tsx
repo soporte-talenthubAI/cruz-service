@@ -26,7 +26,7 @@ interface EntradaCreada {
   emailInvitado: string;
   qrCode: string;
   estado: string;
-  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null; brandingLayout?: "banner" | "centered" | "fullbg" | null };
   generadoPor: { nombre: string };
 }
 
@@ -127,6 +127,7 @@ export default function NuevoQRPage() {
           brandingBgUrl={entradaCreada.evento.brandingBgUrl}
           brandingColorPrimary={entradaCreada.evento.brandingColorPrimary}
           brandingColorText={entradaCreada.evento.brandingColorText}
+          brandingLayout={entradaCreada.evento.brandingLayout}
           onSendEmail={async () => {
             await fetch(`/api/entradas/${entradaCreada.id}/enviar`, { method: "POST" });
           }}

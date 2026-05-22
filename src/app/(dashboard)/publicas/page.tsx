@@ -20,7 +20,7 @@ interface Entrada {
   estado: "PENDIENTE" | "ENVIADO" | "INGRESADO" | "INVALIDADO";
   qrCode: string;
   createdAt: string;
-  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null };
+  evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null; brandingLayout?: "banner" | "centered" | "fullbg" | null };
   generadoPor: { nombre: string };
 }
 
@@ -361,6 +361,7 @@ export default function PublicasPage() {
             brandingBgUrl={selected.evento.brandingBgUrl}
             brandingColorPrimary={selected.evento.brandingColorPrimary}
             brandingColorText={selected.evento.brandingColorText}
+            brandingLayout={selected.evento.brandingLayout}
             onSendEmail={async () => {
               await fetch(`/api/entradas/${selected.id}/enviar`, { method: "POST" });
               setSelected(null);

@@ -25,6 +25,7 @@ interface QRDisplayProps {
   brandingBgUrl?: string | null;
   brandingColorPrimary?: string | null;
   brandingColorText?: string | null;
+  brandingLayout?: "banner" | "centered" | "fullbg" | null;
 }
 
 // WhatsApp brand icon
@@ -49,6 +50,8 @@ export function QRDisplay({
   onSendEmail,
   className,
   brandingBgUrl,
+  brandingColorPrimary,
+  brandingLayout,
 }: QRDisplayProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [sending, setSending] = useState(false);
@@ -57,6 +60,10 @@ export function QRDisplay({
   const isActive = status === "enviado";
 
   const hasBranding = !!brandingBgUrl;
+  const layout: "banner" | "centered" | "fullbg" =
+    brandingLayout === "centered" || brandingLayout === "fullbg" ? brandingLayout : "banner";
+  const isFullBg = hasBranding && layout === "fullbg";
+  const containBg = brandingColorPrimary || "#0d0d0d";
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrCode)}&bgcolor=ebf1e2&color=0d0d0d&margin=10`;
 
@@ -138,112 +145,149 @@ export function QRDisplay({
     }
   }, [generatePngBlob, filename, eventName, eventDate, eventTime]);
 
+  const sectionBg = isFullBg ? "bg-transparent" : "bg-[#0d0d0d]";
+
   return (
     <div className={cn("flex flex-col gap-4 w-full", className)}>
       {/* Ticket card — capturable for download */}
       <div
         ref={cardRef}
         className={cn(
-          "relative overflow-hidden rounded-[14px] border bg-[#0d0d0d] w-full",
+          "relative overflow-hidden rounded-[14px] border w-full bg-[#0d0d0d]",
           isActive
             ? "border-[#e3fd8c]/50"
             : "border-[rgba(235,241,226,0.08)]"
         )}
       >
-        {/* Status badge */}
-        <div className="absolute top-4 right-4 z-20">
-          <Badge variant={status}>{status.toUpperCase()}</Badge>
-        </div>
-
-        {/* Header — branding image if present, otherwise dark wordmark */}
-        {hasBranding ? (
-          <div className="relative h-32 sm:h-36 overflow-hidden">
+        {/* Full background layer (fullbg mode) */}
+        {isFullBg && (
+          <>
             <img
               src={brandingBgUrl!}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/30 via-[#0d0d0d]/55 to-[#0d0d0d]/90" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-4 text-center">
-              <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
+            <div className="absolute inset-0 bg-[#0d0d0d]/75 backdrop-blur-[2px]" />
+          </>
+        )}
+
+        <div className="relative z-10">
+          {/* Status badge */}
+          <div className="absolute top-4 right-4 z-20">
+            <Badge variant={status}>{status.toUpperCase()}</Badge>
+          </div>
+
+          {/* Header */}
+          {isFullBg ? (
+            <div className="px-6 pt-12 pb-3 text-center">
+              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                 {eventName}
               </h3>
             </div>
-          </div>
-        ) : (
-          <div className="relative h-32 sm:h-36 flex flex-col items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center gap-3">
-            <Image
-              src="/images/logo-ciclosuma-cream.png"
-              alt="Ciclosuma"
-              width={320}
-              height={72}
-              className="h-8 sm:h-10 w-auto opacity-90"
-              priority
-            />
-            <h3 className="text-base sm:text-lg font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
-              {eventName}
-            </h3>
-          </div>
-        )}
+          ) : hasBranding ? (
+            <div
+              className="relative h-44 sm:h-52 overflow-hidden"
+              style={layout === "centered" ? { backgroundColor: containBg } : undefined}
+            >
+              <img
+                src={brandingBgUrl!}
+                alt=""
+                className={cn(
+                  "absolute inset-0 w-full h-full",
+                  layout === "centered" ? "object-contain" : "object-cover"
+                )}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/30 via-[#0d0d0d]/55 to-[#0d0d0d]/90" />
+              <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-4 text-center">
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
+                  {eventName}
+                </h3>
+              </div>
+            </div>
+          ) : (
+            <div className="relative h-40 sm:h-48 flex flex-col items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center gap-3">
+              <Image
+                src="/images/logo-ciclosuma-cream.png"
+                alt="Ciclosuma"
+                width={480}
+                height={108}
+                className="h-14 sm:h-16 w-auto opacity-90"
+                priority
+              />
+              <h3 className="text-base sm:text-lg font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
+                {eventName}
+              </h3>
+            </div>
+          )}
 
-        {/* Brand strip + date / time */}
-        <div className="bg-[#0d0d0d] px-5 pt-4 pb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-[rgba(235,241,226,0.04)]">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
-            {eventDate}
-          </span>
-          <span className="text-[#3f4239]">•</span>
-          <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
-            {eventTime}
-          </span>
-        </div>
-
-        {/* QR Code */}
-        <div className="flex justify-center px-5 py-6 bg-[#0d0d0d]">
-          <div className="bg-[#ebf1e2] rounded-2xl p-3 sm:p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
-            <img
-              src={qrImageUrl}
-              alt="QR de entrada"
-              className="h-44 w-44 sm:h-52 sm:w-52 object-contain"
-              crossOrigin="anonymous"
-            />
+          {/* Brand strip + date / time */}
+          <div className={cn(
+            "px-5 pt-4 pb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-[rgba(235,241,226,0.04)]",
+            sectionBg
+          )}>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
+              {eventDate}
+            </span>
+            <span className="text-[#3f4239]">•</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
+              {eventTime}
+            </span>
           </div>
-        </div>
 
-        {/* Guest info */}
-        <div className="px-5 pb-3 bg-[#0d0d0d] text-center">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#7a7e72] font-medium mb-1">
-            Documento
-          </p>
-          <p className="text-2xl font-bold tracking-tight text-[#ebf1e2] tabular-nums">
-            {guestDni}
-          </p>
-          {guestEmail && (
-            <p className="text-xs text-[#7a7e72] mt-1 truncate">{guestEmail}</p>
+          {/* QR Code */}
+          <div className={cn("flex justify-center px-5 py-6", sectionBg)}>
+            <div className="bg-[#ebf1e2] rounded-2xl p-3 sm:p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
+              <img
+                src={qrImageUrl}
+                alt="QR de entrada"
+                className="h-44 w-44 sm:h-52 sm:w-52 object-contain"
+                crossOrigin="anonymous"
+              />
+            </div>
+          </div>
+
+          {/* Guest info */}
+          <div className={cn("px-5 pb-3 text-center", sectionBg)}>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#7a7e72] font-medium mb-1">
+              Documento
+            </p>
+            <p className="text-2xl font-bold tracking-tight text-[#ebf1e2] tabular-nums">
+              {guestDni}
+            </p>
+            {guestEmail && (
+              <p className="text-xs text-[#7a7e72] mt-1 truncate">{guestEmail}</p>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className={cn(
+            "flex items-center justify-between gap-2 px-5 py-3 border-t border-[rgba(235,241,226,0.06)]",
+            sectionBg
+          )}>
+            <span className="text-[10px] uppercase tracking-wide text-[#5e6258] truncate">
+              Por {generatedBy}
+            </span>
+            <span className="text-[10px] text-[#5e6258] font-mono tracking-tight shrink-0">
+              {ticketId.slice(0, 12)}
+            </span>
+          </div>
+
+          {/* Bottom brand mark (only when branding active) */}
+          {hasBranding && (
+            <div className={cn(
+              "border-t border-[rgba(235,241,226,0.06)] py-4 flex justify-center",
+              sectionBg
+            )}>
+              <Image
+                src="/images/logo-ciclosuma-cream.png"
+                alt="Ciclosuma"
+                width={320}
+                height={72}
+                className="h-8 w-auto opacity-60"
+              />
+            </div>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between gap-2 px-5 py-3 bg-[#0d0d0d] border-t border-[rgba(235,241,226,0.06)]">
-          <span className="text-[10px] uppercase tracking-wide text-[#5e6258] truncate">
-            Por {generatedBy}
-          </span>
-          <span className="text-[10px] text-[#5e6258] font-mono tracking-tight shrink-0">
-            {ticketId.slice(0, 12)}
-          </span>
-        </div>
-
-        {/* Bottom brand mark (only when no branding bg, since branding takes hero) */}
-        {hasBranding && (
-          <div className="bg-[#0d0d0d] border-t border-[rgba(235,241,226,0.06)] py-3 flex justify-center">
-            <Image
-              src="/images/logo-ciclosuma-cream.png"
-              alt="Ciclosuma"
-              width={200}
-              height={45}
-              className="h-5 w-auto opacity-60"
-            />
-          </div>
-        )}
       </div>
 
       {/* Action buttons */}

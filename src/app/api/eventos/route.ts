@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
     const {
       nombre, fecha, horaApertura, tipo, capacidad, flyerUrl,
       rrppAsignados, brandingBgUrl, brandingColorPrimary, brandingColorText,
+      brandingLayout,
     } = body;
 
     if (!nombre || !fecha || !horaApertura || !capacidad) {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
         brandingBgUrl: brandingBgUrl || undefined,
         brandingColorPrimary: brandingColorPrimary || undefined,
         brandingColorText: brandingColorText || undefined,
+        brandingLayout: brandingLayout || undefined,
       },
     });
 

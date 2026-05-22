@@ -17,7 +17,7 @@ const sizeMap: Record<LogoSize, { width: number; height: number; className: stri
   sm: { width: 160, height: 36, className: "h-6 w-auto" },
   md: { width: 240, height: 54, className: "h-8 w-auto" },
   lg: { width: 480, height: 108, className: "h-14 w-auto sm:h-16" },
-  xl: { width: 800, height: 180, className: "h-20 w-auto sm:h-24 md:h-28" },
+  xl: { width: 800, height: 180, className: "h-28 w-auto sm:h-36 md:h-44" },
 };
 
 const srcMap: Record<LogoVariant, string> = {

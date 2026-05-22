@@ -82,6 +82,7 @@ model Evento {
   brandingBgUrl        String?
   brandingColorPrimary String?  @default("#C5A059")
   brandingColorText    String?  @default("#FFFFFF")
+  brandingLayout       String?  @default("banner")
 
   entradas      Entrada[]
   rrppAsignados EventoUsuario[]

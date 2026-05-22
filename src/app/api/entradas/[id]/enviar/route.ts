@@ -54,6 +54,7 @@ export async function POST(
       brandingBgUrl: entrada.evento.brandingBgUrl || undefined,
       brandingColorPrimary: entrada.evento.brandingColorPrimary || undefined,
       brandingColorText: entrada.evento.brandingColorText || undefined,
+      brandingLayout: (entrada.evento.brandingLayout as "banner" | "centered" | "fullbg" | null) || undefined,
     });
 
     // Update entrada status and email tracking

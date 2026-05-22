@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
             select: {
               nombre: true, fecha: true, horaApertura: true,
               brandingBgUrl: true, brandingColorPrimary: true, brandingColorText: true,
+              brandingLayout: true,
             },
           },
           generadoPor: { select: { nombre: true } },
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
           select: {
             nombre: true, fecha: true, horaApertura: true,
             brandingBgUrl: true, brandingColorPrimary: true, brandingColorText: true,
+            brandingLayout: true,
           },
         },
         generadoPor: { select: { nombre: true } },

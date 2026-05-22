@@ -51,6 +51,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const allowedFields = [
       "nombre", "fecha", "horaApertura", "tipo", "capacidad",
       "flyerUrl", "activo", "brandingBgUrl", "brandingColorPrimary", "brandingColorText",
+      "brandingLayout",
     ];
     for (const key of allowedFields) {
       if (rest[key] !== undefined) {
