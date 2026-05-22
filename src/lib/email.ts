@@ -91,6 +91,7 @@ function buildEntradaEmailHtml(
   // on nested containers, so fullbg in email degrades to a banner-style hero.
   // Banner / centered render via the heroBlock; fullbg uses the same hero but with
   // a stronger overlay for visual parity.
+  // Branding banner (image only, no event name)
   const heroBlock = hasBranding
     ? `
       <tr>
@@ -101,51 +102,34 @@ function buildEntradaEmailHtml(
             background-position:center;
             background-repeat:no-repeat;
             background-color:${heroBg};
-            height:200px;
-            position:relative;
+            height:180px;
           ">
-            <div style="
-              background:linear-gradient(180deg,rgba(13,13,13,0.3) 0%,rgba(13,13,13,0.9) 100%);
-              height:100%;
-              display:flex;
-              flex-direction:column;
-              align-items:center;
-              justify-content:flex-end;
-              padding:20px;
-              text-align:center;
-            ">
-              <h1 style="
-                margin:0;
-                color:${CREAM};
-                font-family:${FONT_STACK};
-                font-size:22px;
-                font-weight:700;
-                letter-spacing:-0.02em;
-                line-height:1.2;
-              ">${escape(data.eventoNombre)}</h1>
-            </div>
+            <div style="background:linear-gradient(180deg,rgba(13,13,13,0.3) 0%,rgba(13,13,13,0.8) 100%);height:100%;"></div>
           </div>
         </td>
       </tr>`
-    : `
+    : "";
+
+  // Top brand strip — large logo, always rendered
+  const topLogoBlock = `
       <tr>
-        <td style="padding:24px 24px 20px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
-          <div style="
-            color:${CREAM};
-            font-family:${FONT_STACK};
-            font-size:22px;
-            font-weight:700;
-            letter-spacing:-0.02em;
-            line-height:1.2;
-          ">${escape(data.eventoNombre)}</div>
+        <td style="padding:32px 24px 24px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
+          <img src="${LOGO_URL}" alt="Ciclosuma" width="320" height="72" style="display:inline-block;height:56px;width:auto;" />
         </td>
       </tr>`;
 
-  // Top brand strip — always rendered above the hero
-  const topLogoBlock = `
+  // Event name (between QR and DNI)
+  const eventNameBlock = `
       <tr>
-        <td style="padding:20px 24px 14px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
-          <img src="${LOGO_URL}" alt="Ciclosuma" width="220" height="50" style="display:inline-block;height:40px;width:auto;" />
+        <td style="background-color:${INK};padding:8px 24px 0;text-align:center;">
+          <div style="
+            color:${CREAM};
+            font-family:${FONT_STACK};
+            font-size:16px;
+            font-weight:600;
+            letter-spacing:-0.01em;
+            line-height:1.3;
+          ">${escape(data.eventoNombre)}</div>
         </td>
       </tr>`;
 
@@ -201,9 +185,11 @@ function buildEntradaEmailHtml(
             </td>
           </tr>
 
+          ${eventNameBlock}
+
           <!-- DNI -->
           <tr>
-            <td style="background-color:${INK};padding:16px 24px 8px;text-align:center;">
+            <td style="background-color:${INK};padding:8px 24px;text-align:center;">
               <div style="
                 color:${CREAM_FAINT};
                 font-family:${FONT_STACK};

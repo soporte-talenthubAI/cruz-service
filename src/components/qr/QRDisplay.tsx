@@ -179,9 +179,9 @@ export function QRDisplay({
             <Badge variant={status}>{status.toUpperCase()}</Badge>
           </div>
 
-          {/* Top brand strip — always visible */}
+          {/* Top brand strip — always visible, prominent */}
           <div className={cn(
-            "flex justify-center px-5 pt-5 pb-3",
+            "flex justify-center px-5 pt-8 pb-6",
             !isFullBg && "bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)]"
           )}>
             <Image
@@ -190,21 +190,15 @@ export function QRDisplay({
               width={480}
               height={108}
               className={cn(
-                "h-9 sm:h-10 w-auto",
+                "h-14 sm:h-16 w-auto",
                 isFullBg && "drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
               )}
               priority
             />
           </div>
 
-          {/* Header */}
-          {isFullBg ? (
-            <div className="px-6 pt-4 pb-3 text-center">
-              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-                {eventName}
-              </h3>
-            </div>
-          ) : hasBranding ? (
+          {/* Optional branding banner — no event name overlay */}
+          {!isFullBg && hasBranding && (
             <div
               className="relative h-44 sm:h-52 overflow-hidden"
               style={layout === "centered" ? { backgroundColor: containBg } : undefined}
@@ -217,18 +211,7 @@ export function QRDisplay({
                   layout === "centered" ? "object-contain" : "object-cover"
                 )}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/30 via-[#0d0d0d]/55 to-[#0d0d0d]/90" />
-              <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-4 text-center">
-                <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
-                  {eventName}
-                </h3>
-              </div>
-            </div>
-          ) : (
-            <div className="relative h-24 sm:h-28 flex items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center">
-              <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
-                {eventName}
-              </h3>
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/30 via-[#0d0d0d]/45 to-[#0d0d0d]/80" />
             </div>
           )}
 
@@ -256,6 +239,16 @@ export function QRDisplay({
                 crossOrigin="anonymous"
               />
             </div>
+          </div>
+
+          {/* Event name (below QR) */}
+          <div className={cn("px-5 pb-2 text-center", sectionBg)}>
+            <h3 className={cn(
+              "text-base sm:text-lg font-semibold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]",
+              isFullBg && "drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+            )}>
+              {eventName}
+            </h3>
           </div>
 
           {/* Guest info */}
