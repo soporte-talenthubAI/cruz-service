@@ -27,7 +27,7 @@ interface QRDisplayProps {
   brandingColorText?: string | null;
 }
 
-// WhatsApp brand icon (lucide doesn't ship one)
+// WhatsApp brand icon
 function WhatsAppIcon({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -49,8 +49,6 @@ export function QRDisplay({
   onSendEmail,
   className,
   brandingBgUrl,
-  brandingColorPrimary,
-  brandingColorText,
 }: QRDisplayProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [sending, setSending] = useState(false);
@@ -58,24 +56,22 @@ export function QRDisplay({
   const [sharing, setSharing] = useState(false);
   const isActive = status === "enviado";
 
-  const accentColor = brandingColorPrimary || "#C5A059";
-  const textColor = brandingColorText || "#FFFFFF";
-  const bgUrl = brandingBgUrl || "/images/fondo_app.png";
+  const hasBranding = !!brandingBgUrl;
 
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCode)}&bgcolor=FFFFFF&color=000000`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrCode)}&bgcolor=ebf1e2&color=0d0d0d&margin=10`;
 
   const generatePngBlob = useCallback(async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
     const html2canvas = (await import("html2canvas-pro")).default;
     const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: "#0A0A0A",
+      backgroundColor: "#0d0d0d",
       scale: 2,
       useCORS: true,
     });
     return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png"));
   }, []);
 
-  const filename = `entrada-${guestDni}-${ticketId.slice(0, 8)}.png`;
+  const filename = `ciclosuma-entrada-${guestDni}-${ticketId.slice(0, 8)}.png`;
 
   const handleDownload = useCallback(async () => {
     const blob = await generatePngBlob();
@@ -115,7 +111,6 @@ export function QRDisplay({
         canShare?: (data: { files?: File[] }) => boolean;
       };
 
-      // Mobile / supported browsers: native share sheet with image attached
       if (nav.canShare && nav.canShare({ files: [file] }) && navigator.share) {
         try {
           await navigator.share({
@@ -125,13 +120,10 @@ export function QRDisplay({
           });
           return;
         } catch (err) {
-          // User cancelled — silently abort
           if ((err as Error)?.name === "AbortError") return;
-          // Otherwise fall through to fallback
         }
       }
 
-      // Fallback (desktop / unsupported): download PNG + open WhatsApp with text
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.download = filename;
@@ -147,91 +139,115 @@ export function QRDisplay({
   }, [generatePngBlob, filename, eventName, eventDate, eventTime]);
 
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div className={cn("flex flex-col gap-4 w-full", className)}>
       {/* Ticket card — capturable for download */}
       <div
         ref={cardRef}
         className={cn(
-          "relative overflow-hidden rounded-[--radius-card] border",
+          "relative overflow-hidden rounded-[14px] border bg-[#0d0d0d] w-full",
           isActive
-            ? "border-gold-500/50 animate-pulse-gold"
-            : "border-[rgba(255,255,255,0.06)]"
+            ? "border-[#e3fd8c]/50"
+            : "border-[rgba(235,241,226,0.08)]"
         )}
       >
-        {/* Shimmer effect when active */}
-        {isActive && (
-          <div
-            className="absolute inset-0 rounded-[--radius-card] pointer-events-none z-10"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(245,158,11,0.08), transparent)",
-              backgroundSize: "200% 100%",
-              animation: "shimmer 2s linear infinite",
-            }}
-          />
-        )}
-
         {/* Status badge */}
         <div className="absolute top-4 right-4 z-20">
           <Badge variant={status}>{status.toUpperCase()}</Badge>
         </div>
 
-        {/* Header with background + event name overlay */}
-        <div className="relative h-36 overflow-hidden">
-          {bgUrl.startsWith("/") ? (
-            <Image src={bgUrl} alt="" fill className="object-cover" quality={80} />
-          ) : (
-            <img src={bgUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70" />
-          <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
-            <h3
-              className="text-xl sm:text-2xl font-bold leading-tight line-clamp-2"
-              style={{ color: textColor, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
-            >
+        {/* Header — branding image if present, otherwise dark wordmark */}
+        {hasBranding ? (
+          <div className="relative h-32 sm:h-36 overflow-hidden">
+            <img
+              src={brandingBgUrl!}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/30 via-[#0d0d0d]/55 to-[#0d0d0d]/90" />
+            <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-4 text-center">
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
+                {eventName}
+              </h3>
+            </div>
+          </div>
+        ) : (
+          <div className="relative h-32 sm:h-36 flex flex-col items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center gap-3">
+            <Image
+              src="/images/logo-ciclosuma-cream.png"
+              alt="Ciclosuma"
+              width={320}
+              height={72}
+              className="h-8 sm:h-10 w-auto opacity-90"
+              priority
+            />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
               {eventName}
             </h3>
           </div>
-        </div>
+        )}
 
-        {/* Event date / time */}
-        <div className="bg-surface-1 px-5 pt-4 pb-3 flex items-center justify-center gap-3">
-          <span className="text-sm font-medium" style={{ color: accentColor }}>{eventDate}</span>
-          <span className="text-dark-600">•</span>
-          <span className="text-sm font-medium" style={{ color: accentColor }}>{eventTime}</span>
+        {/* Brand strip + date / time */}
+        <div className="bg-[#0d0d0d] px-5 pt-4 pb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-[rgba(235,241,226,0.04)]">
+          <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
+            {eventDate}
+          </span>
+          <span className="text-[#3f4239]">•</span>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-[#9a9f93] font-medium">
+            {eventTime}
+          </span>
         </div>
 
         {/* QR Code */}
-        <div className="flex justify-center px-5 py-4 bg-surface-1">
-          <div className="bg-white rounded-2xl p-4">
+        <div className="flex justify-center px-5 py-6 bg-[#0d0d0d]">
+          <div className="bg-[#ebf1e2] rounded-2xl p-3 sm:p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
             <img
               src={qrImageUrl}
               alt="QR de entrada"
-              className="h-48 w-48 object-contain"
+              className="h-44 w-44 sm:h-52 sm:w-52 object-contain"
               crossOrigin="anonymous"
             />
           </div>
         </div>
 
-        {/* Guest info — only DNI and generator */}
-        <div className="px-5 pb-2 bg-surface-1">
-          <p className="text-lg font-bold text-dark-50">DNI: {guestDni}</p>
-          {guestEmail && <p className="text-sm text-dark-500">{guestEmail}</p>}
+        {/* Guest info */}
+        <div className="px-5 pb-3 bg-[#0d0d0d] text-center">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#7a7e72] font-medium mb-1">
+            Documento
+          </p>
+          <p className="text-2xl font-bold tracking-tight text-[#ebf1e2] tabular-nums">
+            {guestDni}
+          </p>
+          {guestEmail && (
+            <p className="text-xs text-[#7a7e72] mt-1 truncate">{guestEmail}</p>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 bg-surface-1 border-t border-[rgba(255,255,255,0.06)]">
-          <span className="text-xs text-dark-500">
-            Generado por {generatedBy}
+        <div className="flex items-center justify-between gap-2 px-5 py-3 bg-[#0d0d0d] border-t border-[rgba(235,241,226,0.06)]">
+          <span className="text-[10px] uppercase tracking-wide text-[#5e6258] truncate">
+            Por {generatedBy}
           </span>
-          <span className="text-xs text-dark-600 font-mono">
+          <span className="text-[10px] text-[#5e6258] font-mono tracking-tight shrink-0">
             {ticketId.slice(0, 12)}
           </span>
         </div>
+
+        {/* Bottom brand mark (only when no branding bg, since branding takes hero) */}
+        {hasBranding && (
+          <div className="bg-[#0d0d0d] border-t border-[rgba(235,241,226,0.06)] py-3 flex justify-center">
+            <Image
+              src="/images/logo-ciclosuma-cream.png"
+              alt="Ciclosuma"
+              width={200}
+              height={45}
+              className="h-5 w-auto opacity-60"
+            />
+          </div>
+        )}
       </div>
 
       {/* Action buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
         <Button
           variant="gold"
           size="md"

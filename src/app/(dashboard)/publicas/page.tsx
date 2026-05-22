@@ -294,7 +294,7 @@ export default function PublicasPage() {
                     onClick={() => setSelected(entrada)}
                     className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
                   >
-                    <td className="px-4 py-3 text-dark-100 font-medium truncate max-w-[140px] lg:max-w-[240px]">
+                    <td className="px-4 py-3 text-dark-100 font-medium truncate max-w-[110px] sm:max-w-[140px] lg:max-w-[240px]">
                       {entrada.nombreInvitado}
                     </td>
                     <td className="px-4 py-3 text-dark-300 text-xs font-mono">

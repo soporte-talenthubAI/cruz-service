@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
-import Image from "next/image";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,7 +33,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Redirect based on role
     const session = await getSession();
     const role = (session?.user as { role?: string })?.role?.toLowerCase();
     const redirectPath = role === "rrpp" ? "/inicio" : "/dashboard";
@@ -42,87 +41,102 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Background image */}
-      <Image
-        src="/images/fondo_app.png"
-        alt=""
-        fill
-        priority
-        className="object-cover"
-        quality={90}
+    <div className="relative flex min-h-[100dvh] flex-col bg-[#0d0d0d] overflow-hidden">
+      {/* Subtle halo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(60% 50% at 50% 0%, rgba(227,253,140,0.08) 0%, rgba(13,13,13,0) 60%)",
+        }}
       />
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/60" />
+      {/* Grain (very subtle) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.025] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(235,241,226,0.5) 1px, transparent 1px)",
+          backgroundSize: "3px 3px",
+        }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 flex w-full max-w-sm lg:max-w-md flex-col items-center gap-8">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-1">
-          <h1 className="text-3xl font-bold tracking-[0.25em] gold-text">
-            GESTOR
-          </h1>
-          <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">
-            De Ingreso
-          </p>
-        </div>
+      {/* Header (logo) */}
+      <header className="relative z-10 flex items-center justify-center pt-12 pb-4 lg:pt-16">
+        <Logo variant="cream" size="xl" priority />
+      </header>
 
-        {/* Login card */}
-        <div className="glass-card w-full p-6 animate-slide-up">
-          <h2 className="text-xl font-semibold text-dark-50 mb-6">
-            Bienvenido
-          </h2>
+      {/* Main */}
+      <main className="relative z-10 flex flex-1 items-center justify-center px-6 pb-10">
+        <div className="w-full max-w-sm flex flex-col gap-8 animate-slide-up">
+          {/* Heading */}
+          <div className="flex flex-col gap-2 text-center">
+            <h1 className="text-[28px] leading-tight font-bold tracking-[-0.03em] text-[#ebf1e2]">
+              Bienvenido de nuevo
+            </h1>
+            <p className="text-sm text-[#9a9f93]">
+              Ingresá tus credenciales para continuar
+            </p>
+          </div>
 
-          {error && (
-            <div className="mb-4 rounded-xl bg-error/10 border border-error/30 p-3 text-sm text-error animate-fade-in">
-              {error}
+          {/* Card */}
+          <div className="glass-card p-6 flex flex-col gap-5">
+            {error && (
+              <div className="rounded-[10px] bg-[rgba(207,58,74,0.08)] border border-[rgba(207,58,74,0.3)] p-3 text-sm text-[#e07385] animate-fade-in">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                leftIcon={<Mail size={18} />}
+                autoComplete="email"
+                required
+              />
+
+              <Input
+                label="Contraseña"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+
+              <Button
+                type="submit"
+                variant="gold"
+                size="lg"
+                loading={loading}
+                className="w-full mt-1"
+              >
+                Ingresar
+              </Button>
+            </form>
+
+            <div className="text-center">
+              <Link
+                href="/olvide-password"
+                className="text-sm text-[#9a9f93] hover:text-[#ebf1e2] transition-colors underline-offset-4 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
-          )}
+          </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              leftIcon={<Mail size={18} />}
-              autoComplete="email"
-              required
-            />
-
-            <Input
-              label="Contraseña"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-
-            <Button
-              type="submit"
-              variant="gold"
-              size="lg"
-              loading={loading}
-              className="w-full mt-2"
-            >
-              Ingresar
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/olvide-password"
-              className="text-sm text-gold-500/70 hover:text-gold-500 transition-colors"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
+          {/* Footer */}
+          <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#5e6258]">
+            <span>Ciclosuma</span>
+            <span className="h-1 w-1 rounded-full bg-[#5e6258]" />
+            <span>v1.0</span>
           </div>
         </div>
-
-        {/* Version */}
-        <span className="text-xs text-dark-600">v1.0.0</span>
-      </div>
+      </main>
     </div>
   );
 }

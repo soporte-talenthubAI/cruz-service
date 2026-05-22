@@ -25,20 +25,24 @@ export function StatCard({
   return (
     <div className={cn("glass-card p-5 flex flex-col gap-3", className)}>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-dark-400">{label}</span>
+        <span className="text-xs uppercase tracking-wide text-[#9a9f93] font-medium">
+          {label}
+        </span>
         {icon && (
-          <div className="text-gold-500/60 [&>svg]:h-5 [&>svg]:w-5">
+          <div className="text-[#e3fd8c]/70 [&>svg]:h-5 [&>svg]:w-5">
             {icon}
           </div>
         )}
       </div>
       <div className="flex items-end justify-between gap-2">
-        <span className="text-3xl font-bold gold-text">{value}</span>
+        <span className="text-3xl font-bold tracking-tight text-[#ebf1e2] tabular-nums">
+          {value}
+        </span>
         {trend && (
           <div
             className={cn(
-              "flex items-center gap-1 text-xs font-medium pb-1",
-              trend.positive ? "text-success" : "text-error"
+              "flex items-center gap-1 text-xs font-semibold pb-1",
+              trend.positive ? "text-[#a8d966]" : "text-[#e07385]"
             )}
           >
             {trend.positive ? (

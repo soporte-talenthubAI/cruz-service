@@ -1,26 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
-const inter = Inter({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["200", "300", "400", "500", "600", "700"],
+  variable: "--font-archivo",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Gestor de Ingreso",
-  description: "Gestión de entradas con QR para eventos nocturnos",
+  title: "Ciclosuma",
+  description: "Gestión de eventos, entradas y RRPP",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Gestor de Ingreso",
+    statusBarStyle: "default",
+    title: "Ciclosuma",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0A",
+  themeColor: "#0d0d0d",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -34,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${archivo.variable} antialiased`}>
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

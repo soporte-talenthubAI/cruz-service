@@ -30,8 +30,7 @@ export function AppShell({
   const hasBottomNav = role !== "portero";
 
   return (
-    <div className="min-h-[100dvh] bg-dark-900">
-      {/* Desktop sidebar */}
+    <div className="min-h-[100dvh] bg-[#0d0d0d] overflow-x-clip">
       <Sidebar role={role} bolicheName={bolicheName} />
 
       <TopBar
@@ -44,8 +43,9 @@ export function AppShell({
 
       <main
         className={cn(
-          "pt-14 px-4",
-          "max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:ml-60 lg:px-8 xl:px-12",
+          "pt-14 px-4 sm:px-6 lg:px-8 xl:px-12",
+          "max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:ml-64",
+          "min-w-0 overflow-x-clip",
           hasBottomNav ? "pb-24 lg:pb-8" : "pb-6",
           className
         )}
@@ -56,12 +56,8 @@ export function AppShell({
             : undefined,
         }}
       >
-        <div className="lg:max-w-5xl">
-          {children}
-        </div>
+        <div className="w-full min-w-0 lg:max-w-6xl">{children}</div>
       </main>
-
-      {hasBottomNav && <BottomNav role={role} />}
     </div>
   );
 }

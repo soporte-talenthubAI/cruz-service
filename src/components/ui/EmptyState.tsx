@@ -28,11 +28,13 @@ export function EmptyState({
         className
       )}
     >
-      <div className="text-gold-500/50 [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
+      <div className="text-[#5e6258] [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
       <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-dark-200">{title}</h3>
+        <h3 className="text-lg font-bold tracking-tight text-[#ebf1e2]">
+          {title}
+        </h3>
         {description && (
-          <p className="text-sm text-dark-400 max-w-xs">{description}</p>
+          <p className="text-sm text-[#9a9f93] max-w-xs">{description}</p>
         )}
       </div>
       {actionLabel && onAction && (

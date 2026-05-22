@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Mail, ArrowLeft, MessageSquare, Check } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -41,110 +41,121 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 overflow-hidden">
-      <Image
-        src="/images/fondo_app.png"
-        alt=""
-        fill
-        priority
-        className="object-cover"
-        quality={90}
+    <div className="relative flex min-h-[100dvh] flex-col bg-[#0d0d0d] overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(60% 50% at 50% 0%, rgba(227,253,140,0.08) 0%, rgba(13,13,13,0) 60%)",
+        }}
       />
-      <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative z-10 flex w-full max-w-sm lg:max-w-md flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-1">
-          <h1 className="text-3xl font-bold tracking-[0.25em] gold-text">GESTOR</h1>
-          <p className="text-xs text-dark-300 tracking-[0.25em] uppercase">De Ingreso</p>
-        </div>
+      <header className="relative z-10 flex items-center justify-center pt-12 pb-4 lg:pt-16">
+        <Logo variant="cream" size="xl" priority />
+      </header>
 
-        <div className="glass-card w-full p-6 animate-slide-up">
-          {sent ? (
-            <div className="flex flex-col items-center gap-4 text-center py-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15">
-                <Check size={28} className="text-success" />
-              </div>
-              <h2 className="text-lg font-semibold text-dark-50">Solicitud enviada</h2>
-              <p className="text-sm text-dark-400">
-                Notificamos al administrador. Te van a contactar para entregarte tu nueva contraseña.
-              </p>
-              <Link
-                href="/login"
-                className="text-sm text-gold-500 hover:text-gold-400 transition-colors mt-2"
-              >
-                Volver al login
-              </Link>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-xl font-semibold text-dark-50 mb-2">
-                ¿Olvidaste tu contraseña?
-              </h2>
-              <p className="text-sm text-dark-400 mb-6">
-                Ingresá tu email y el administrador te asignará una nueva.
-              </p>
-
-              {error && (
-                <div className="mb-4 rounded-xl bg-error/10 border border-error/30 p-3 text-sm text-error animate-fade-in">
-                  {error}
+      <main className="relative z-10 flex flex-1 items-center justify-center px-6 pb-10">
+        <div className="w-full max-w-sm flex flex-col gap-8 animate-slide-up">
+          <div className="glass-card p-6 flex flex-col gap-5">
+            {sent ? (
+              <div className="flex flex-col items-center gap-4 text-center py-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e3fd8c]">
+                  <Check size={28} className="text-[#0d0d0d]" />
                 </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <Input
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  leftIcon={<Mail size={18} />}
-                  autoComplete="email"
-                  required
-                />
-
-                <div>
-                  <label className="text-sm text-dark-300 mb-2 block">
-                    Nota (opcional)
-                  </label>
-                  <div className="relative">
-                    <MessageSquare
-                      size={16}
-                      className="absolute left-3 top-3 text-dark-500 pointer-events-none"
-                    />
-                    <textarea
-                      value={nota}
-                      onChange={(e) => setNota(e.target.value)}
-                      placeholder="Ej: olvidé mi contraseña, no puedo entrar..."
-                      maxLength={280}
-                      rows={3}
-                      className="w-full bg-surface-2 text-dark-200 text-sm rounded-xl pl-9 pr-3 py-2.5 border border-[rgba(255,255,255,0.06)] outline-none focus:border-gold-500/40 transition-colors resize-none"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="gold"
-                  size="lg"
-                  loading={loading}
-                  className="w-full"
-                >
-                  Enviar solicitud
-                </Button>
-              </form>
-
-              <div className="mt-4 text-center">
+                <h2 className="text-lg font-bold tracking-tight text-[#ebf1e2]">
+                  Solicitud enviada
+                </h2>
+                <p className="text-sm text-[#9a9f93]">
+                  Notificamos al administrador. Te van a contactar para
+                  entregarte tu nueva contraseña.
+                </p>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-sm text-dark-400 hover:text-dark-200 transition-colors"
+                  className="text-sm text-[#ebf1e2] hover:text-[#e3fd8c] transition-colors mt-2 underline-offset-4 hover:underline"
                 >
-                  <ArrowLeft size={14} />
                   Volver al login
                 </Link>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-bold tracking-tight text-[#ebf1e2]">
+                    Olvidaste tu contraseña
+                  </h2>
+                  <p className="text-sm text-[#9a9f93]">
+                    Ingresá tu email y el administrador te asignará una nueva.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="rounded-[10px] bg-[rgba(207,58,74,0.08)] border border-[rgba(207,58,74,0.3)] p-3 text-sm text-[#e07385] animate-fade-in">
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    leftIcon={<Mail size={18} />}
+                    autoComplete="email"
+                    required
+                  />
+
+                  <div>
+                    <label className="text-[11px] uppercase tracking-wide text-[#9a9f93] font-medium mb-2 block">
+                      Nota (opcional)
+                    </label>
+                    <div className="relative">
+                      <MessageSquare
+                        size={16}
+                        className="absolute left-3 top-3 text-[#7a7e72] pointer-events-none"
+                      />
+                      <textarea
+                        value={nota}
+                        onChange={(e) => setNota(e.target.value)}
+                        placeholder="Ej: olvidé mi contraseña, no puedo entrar..."
+                        maxLength={280}
+                        rows={3}
+                        className="w-full bg-[#1a1a1a] text-[#ebf1e2] text-sm rounded-[10px] pl-9 pr-3 py-2.5 border border-[rgba(235,241,226,0.1)] outline-none focus:border-[#e3fd8c] focus:shadow-[0_0_0_3px_rgba(227,253,140,0.15)] transition-all resize-none placeholder:text-[#6a6e64]"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="gold"
+                    size="lg"
+                    loading={loading}
+                    className="w-full"
+                  >
+                    Enviar solicitud
+                  </Button>
+                </form>
+
+                <div className="text-center">
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-1.5 text-sm text-[#9a9f93] hover:text-[#ebf1e2] transition-colors"
+                  >
+                    <ArrowLeft size={14} />
+                    Volver al login
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#5e6258]">
+            <span>Ciclosuma</span>
+            <span className="h-1 w-1 rounded-full bg-[#5e6258]" />
+            <span>v1.0</span>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -26,23 +26,23 @@ interface NavItem {
 
 const navItems: Record<UserRole, NavItem[]> = {
   admin: [
-    { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={22} /> },
-    { href: "/eventos", label: "Eventos", icon: <Calendar size={22} /> },
+    { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
+    { href: "/eventos", label: "Eventos", icon: <Calendar size={20} /> },
     { href: "/nuevo-qr", label: "Nuevo QR", icon: <QrCode size={22} />, central: true },
-    { href: "/publicas", label: "Entradas", icon: <Ticket size={22} /> },
-    { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
+    { href: "/publicas", label: "Entradas", icon: <Ticket size={20} /> },
+    { href: "/perfil", label: "Perfil", icon: <UserCircle size={20} /> },
   ],
   rrpp: [
-    { href: "/inicio", label: "Inicio", icon: <Home size={22} /> },
+    { href: "/inicio", label: "Inicio", icon: <Home size={20} /> },
     { href: "/nuevo-qr", label: "Nuevo QR", icon: <QrCode size={22} />, central: true },
-    { href: "/mis-qrs", label: "Mis QRs", icon: <Ticket size={22} /> },
-    { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
+    { href: "/mis-qrs", label: "Mis QRs", icon: <Ticket size={20} /> },
+    { href: "/perfil", label: "Perfil", icon: <UserCircle size={20} /> },
   ],
   portero: [
-    { href: "/dashboard", label: "Panel", icon: <LayoutDashboard size={22} /> },
+    { href: "/dashboard", label: "Panel", icon: <LayoutDashboard size={20} /> },
     { href: "/scanner", label: "Scanner", icon: <ScanLine size={22} />, central: true },
-    { href: "/historial", label: "Historial", icon: <ClipboardList size={22} /> },
-    { href: "/perfil", label: "Perfil", icon: <UserCircle size={22} /> },
+    { href: "/historial", label: "Historial", icon: <ClipboardList size={20} /> },
+    { href: "/perfil", label: "Perfil", icon: <UserCircle size={20} /> },
   ],
 };
 
@@ -58,7 +58,7 @@ export function BottomNav({ role }: BottomNavProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold-500/15 bg-surface-1/90 backdrop-blur-[16px] lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-[rgba(235,241,226,0.06)] bg-[#0d0d0d]/92 backdrop-blur-[16px] lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
@@ -72,10 +72,10 @@ export function BottomNav({ role }: BottomNavProps) {
                 href={item.href}
                 className="relative -mt-6 flex flex-col items-center"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full gold-gradient shadow-gold-lg text-dark-900 transition-transform duration-200 active:scale-90">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e3fd8c] text-[#0d0d0d] shadow-[0_8px_24px_rgba(227,253,140,0.25)] transition-transform duration-150 active:scale-90 border-4 border-[#0d0d0d]">
                   {item.icon}
                 </div>
-                <span className="mt-1 text-[10px] font-medium text-gold-500">
+                <span className="mt-1 text-[10px] font-semibold tracking-tight text-[#ebf1e2]">
                   {item.label}
                 </span>
               </Link>
@@ -87,14 +87,16 @@ export function BottomNav({ role }: BottomNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-3 min-w-[56px] transition-colors duration-200",
-                isActive ? "text-gold-500" : "text-dark-400"
+                "relative flex flex-col items-center gap-1 py-2 px-3 min-w-[56px] transition-colors duration-150",
+                isActive ? "text-[#ebf1e2]" : "text-[#7a7e72] hover:text-[#b8bdac]"
               )}
             >
               {item.icon}
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium tracking-tight">
+                {item.label}
+              </span>
               {isActive && (
-                <span className="absolute bottom-1 h-1 w-1 rounded-full bg-gold-500" />
+                <span className="absolute -top-px h-[3px] w-8 rounded-b bg-[#e3fd8c]" />
               )}
             </Link>
           );

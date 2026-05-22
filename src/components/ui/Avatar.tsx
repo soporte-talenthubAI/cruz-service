@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const avatarVariants = cva(
-  "relative inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 font-semibold",
+  "relative inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 font-semibold tracking-tight",
   {
     variants: {
       size: {
@@ -13,9 +13,9 @@ const avatarVariants = cva(
         lg: "h-14 w-14 text-lg",
       },
       role: {
-        admin: "gold-gradient text-dark-900",
-        rrpp: "bg-surface-2 text-dark-200",
-        portero: "bg-surface-2 text-dark-200",
+        admin: "bg-[#e3fd8c] text-[#0d0d0d]",
+        rrpp: "bg-[#232323] text-[#ebf1e2] border border-[rgba(235,241,226,0.08)]",
+        portero: "bg-[#1a1a1a] text-[#ebf1e2] border border-[rgba(235,241,226,0.08)]",
       },
     },
     defaultVariants: {

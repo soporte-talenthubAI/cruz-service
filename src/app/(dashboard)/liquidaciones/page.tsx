@@ -215,13 +215,13 @@ export default function LiquidacionesPage() {
           {/* Summary cards */}
           <div className="grid grid-cols-2 gap-3">
             <div className="glass-card p-4 text-center">
-              <p className="text-2xl font-bold text-gold-500">
+              <p className="text-xl sm:text-2xl font-bold text-gold-500 tabular-nums truncate">
                 ${filtered.totales.montoTotal.toLocaleString("es-AR")}
               </p>
               <p className="text-xs text-dark-400 mt-1">Total a pagar</p>
             </div>
             <div className="glass-card p-4 text-center">
-              <p className="text-2xl font-bold text-dark-100">
+              <p className="text-xl sm:text-2xl font-bold text-dark-100 tabular-nums">
                 {filtered.totales.totalIngresadas}
               </p>
               <p className="text-xs text-dark-400 mt-1">QRs ingresados</p>

@@ -142,8 +142,8 @@ export default function EventosPage() {
                       onClick={() => router.push(`/eventos/${e.id}`)}
                       className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 cursor-pointer transition-colors"
                     >
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-dark-100 truncate max-w-[180px] lg:max-w-[300px]">{e.nombre}</p>
+                      <td className="px-4 py-3 min-w-0">
+                        <p className="font-medium text-dark-100 truncate max-w-[120px] sm:max-w-[180px] lg:max-w-[300px]">{e.nombre}</p>
                         <p className="text-xs text-dark-500 sm:hidden mt-0.5">
                           {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })} — {formatTime12h(e.horaApertura)}
                         </p>

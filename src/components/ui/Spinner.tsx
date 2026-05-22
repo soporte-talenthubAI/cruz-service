@@ -38,7 +38,6 @@ export function Spinner({ size, className, fullscreen }: SpinnerProps) {
         strokeWidth="3"
       />
       <path
-        className="text-gold-500"
         d="M12 2a10 10 0 0 1 10 10"
         stroke="currentColor"
         strokeWidth="3"
@@ -49,7 +48,7 @@ export function Spinner({ size, className, fullscreen }: SpinnerProps) {
 
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/90 text-gold-500">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0d0d]/90 backdrop-blur-sm text-[#e3fd8c]">
         <div className="flex flex-col items-center gap-4">
           <svg
             className="h-12 w-12 animate-spin"
@@ -72,7 +71,9 @@ export function Spinner({ size, className, fullscreen }: SpinnerProps) {
               strokeLinecap="round"
             />
           </svg>
-          <span className="text-sm text-dark-300">Cargando...</span>
+          <span className="text-xs text-[#9a9f93] tracking-[0.18em] uppercase">
+            Cargando
+          </span>
         </div>
       </div>
     );

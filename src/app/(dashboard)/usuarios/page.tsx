@@ -311,7 +311,7 @@ export default function UsuariosPage() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard value={stats.total} label="Total" icon={<Users />} />
         <StatCard value={stats.rrpp} label="RRPP" icon={<Ticket />} />
         <StatCard value={stats.porteros} label="Seguridad" icon={<Shield />} />

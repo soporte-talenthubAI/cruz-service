@@ -12,10 +12,25 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "Gestor de Ingreso <onboarding@resend.dev>";
+const FROM_EMAIL = process.env.FROM_EMAIL || "Ciclosuma <onboarding@resend.dev>";
 
-// Base URL for images hosted in the app (needs to be absolute for emails)
+// Base URL for images hosted in the app (must be absolute for emails)
 const APP_URL = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
+// ============================================
+// Design tokens (Ciclosuma dark)
+// ============================================
+const INK = "#0d0d0d";
+const INK_2 = "#141414";
+const INK_3 = "#1a1a1a";
+const CREAM = "#ebf1e2";
+const CREAM_MUTED = "#9a9f93";
+const CREAM_FAINT = "#5e6258";
+const LIME = "#e3fd8c";
+const BORDER = "rgba(235,241,226,0.08)";
+const FONT_STACK = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+
+const LOGO_URL = `${APP_URL}/images/logo-ciclosuma-cream.png`;
 
 // ============================================
 // Entrada / QR Email
@@ -38,14 +53,16 @@ interface EntradaEmailData {
 
 export async function sendEntradaEmail(data: EntradaEmailData) {
   const resend = getResend();
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qrCode)}&bgcolor=FFFFFF&color=000000`;
-  const bgImageUrl = data.brandingBgUrl || `${APP_URL}/images/fondo_app.png`;
+  // QR con paleta de marca (cream bg, ink foreground)
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
+    data.qrCode
+  )}&bgcolor=ebf1e2&color=0d0d0d&margin=10`;
 
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: `Tu entrada para ${data.eventoNombre}`,
-    html: buildEntradaEmailHtml(data, qrImageUrl, bgImageUrl),
+    subject: `Tu entrada para ${data.eventoNombre} — Ciclosuma`,
+    html: buildEntradaEmailHtml(data, qrImageUrl),
   });
 
   if (error) {
@@ -58,60 +75,184 @@ export async function sendEntradaEmail(data: EntradaEmailData) {
 
 function buildEntradaEmailHtml(
   data: EntradaEmailData,
-  qrImageUrl: string,
-  bgImageUrl: string
+  qrImageUrl: string
 ): string {
-  const accentColor = data.brandingColorPrimary || "#C5A059";
-  const textColor = data.brandingColorText || "#FFFFFF";
+  const hasBranding = !!data.brandingBgUrl;
 
-  return `
-<!DOCTYPE html>
+  // Hero section: branding image if provided, otherwise wordmark on dark
+  const heroBlock = hasBranding
+    ? `
+      <tr>
+        <td style="padding:0;">
+          <div style="
+            background-image:url('${data.brandingBgUrl}');
+            background-size:cover;
+            background-position:center;
+            height:160px;
+            position:relative;
+          ">
+            <div style="
+              background:linear-gradient(180deg,rgba(13,13,13,0.3) 0%,rgba(13,13,13,0.9) 100%);
+              height:100%;
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              justify-content:flex-end;
+              padding:20px;
+              text-align:center;
+            ">
+              <h1 style="
+                margin:0;
+                color:${CREAM};
+                font-family:${FONT_STACK};
+                font-size:22px;
+                font-weight:700;
+                letter-spacing:-0.02em;
+                line-height:1.2;
+              ">${escape(data.eventoNombre)}</h1>
+            </div>
+          </div>
+        </td>
+      </tr>`
+    : `
+      <tr>
+        <td style="padding:32px 24px 16px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
+          <img src="${LOGO_URL}" alt="Ciclosuma" width="220" height="50" style="display:inline-block;height:36px;width:auto;margin-bottom:16px;" />
+          <div style="
+            color:${CREAM};
+            font-family:${FONT_STACK};
+            font-size:20px;
+            font-weight:700;
+            letter-spacing:-0.02em;
+            line-height:1.2;
+          ">${escape(data.eventoNombre)}</div>
+        </td>
+      </tr>`;
+
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu entrada — Ciclosuma</title>
 </head>
-<body style="margin:0;padding:0;background-color:#000;font-family:Arial,sans-serif;">
-  <div style="background-color:#000;color:${textColor};max-width:600px;margin:auto;border:1px solid #333;">
+<body style="margin:0;padding:0;background-color:${INK};font-family:${FONT_STACK};color:${CREAM};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${INK};padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background-color:${INK};border:1px solid ${BORDER};border-radius:14px;overflow:hidden;">
 
-    <!-- Header con imagen de fondo -->
-    <div style="background-image:url('${bgImageUrl}');background-size:cover;background-position:center;padding:60px 20px;text-align:center;">
-    </div>
+          ${heroBlock}
 
-    <!-- Contenido -->
-    <div style="padding:40px;text-align:center;">
-      <h1 style="color:${accentColor};font-weight:300;letter-spacing:2px;margin:0 0 8px;">TU ENTRADA</h1>
-      <p style="color:#aaa;margin:0 0 4px;font-size:14px;">Presentá este código en la entrada junto a tu DNI.</p>
+          <!-- Date / time strip -->
+          <tr>
+            <td style="background-color:${INK};padding:14px 24px;border-bottom:1px solid ${BORDER};text-align:center;">
+              <span style="
+                color:${CREAM_MUTED};
+                font-family:${FONT_STACK};
+                font-size:11px;
+                font-weight:600;
+                letter-spacing:0.18em;
+                text-transform:uppercase;
+              ">${escape(data.eventoFecha)}</span>
+              <span style="color:${CREAM_FAINT};margin:0 10px;">•</span>
+              <span style="
+                color:${CREAM_MUTED};
+                font-family:${FONT_STACK};
+                font-size:11px;
+                font-weight:600;
+                letter-spacing:0.18em;
+                text-transform:uppercase;
+              ">${escape(data.eventoHora)}</span>
+            </td>
+          </tr>
 
-      <!-- QR Code -->
-      <div style="background-color:#fff;padding:20px;display:inline-block;margin-top:20px;border-radius:10px;">
-        <img src="${qrImageUrl}" width="200" height="200" alt="Código QR" style="display:block;" />
-      </div>
+          <!-- QR -->
+          <tr>
+            <td style="background-color:${INK};padding:28px 24px 8px;text-align:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;background-color:${CREAM};border-radius:16px;">
+                <tr>
+                  <td style="padding:16px;">
+                    <img src="${qrImageUrl}" alt="Código QR" width="220" height="220" style="display:block;width:220px;height:220px;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-      <!-- Datos del invitado -->
-      <div style="margin-top:24px;text-align:center;">
-        <p style="font-size:18px;font-weight:700;color:${textColor};margin:0;">DNI: ${data.dniInvitado}</p>
-      </div>
+          <!-- DNI -->
+          <tr>
+            <td style="background-color:${INK};padding:16px 24px 8px;text-align:center;">
+              <div style="
+                color:${CREAM_FAINT};
+                font-family:${FONT_STACK};
+                font-size:10px;
+                font-weight:600;
+                letter-spacing:0.2em;
+                text-transform:uppercase;
+                margin-bottom:4px;
+              ">Documento</div>
+              <div style="
+                color:${CREAM};
+                font-family:${FONT_STACK};
+                font-size:26px;
+                font-weight:700;
+                letter-spacing:-0.02em;
+              ">${escape(data.dniInvitado)}</div>
+            </td>
+          </tr>
 
-      <!-- Info del evento -->
-      <div style="margin-top:30px;border-top:1px solid #222;padding-top:20px;text-align:center;">
-        <p style="color:${textColor};margin:0 0 8px;font-size:14px;"><strong>Evento:</strong> ${data.eventoNombre}</p>
-        <p style="color:${textColor};margin:0;font-size:14px;"><strong>Fecha:</strong> ${data.eventoFecha} — ${data.eventoHora}</p>
-      </div>
+          <!-- Instructions -->
+          <tr>
+            <td style="background-color:${INK};padding:16px 24px 24px;text-align:center;">
+              <p style="
+                margin:0;
+                color:${CREAM_MUTED};
+                font-family:${FONT_STACK};
+                font-size:13px;
+                line-height:1.55;
+              ">
+                Presentá este código en la entrada junto a tu DNI.
+              </p>
+            </td>
+          </tr>
 
-      <!-- Footer -->
-      <div style="margin-top:24px;border-top:1px solid #222;padding-top:16px;">
-        <p style="font-size:11px;color:#505050;margin:0;">Generado por ${data.generadoPor}</p>
-        <p style="font-size:10px;color:#333;margin:4px 0 0;font-family:monospace;">${data.ticketId.slice(0, 12)}</p>
-      </div>
-    </div>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:${INK_2};padding:14px 24px;border-top:1px solid ${BORDER};">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="
+                    color:${CREAM_FAINT};
+                    font-family:${FONT_STACK};
+                    font-size:10px;
+                    letter-spacing:0.08em;
+                    text-transform:uppercase;
+                  ">Por ${escape(data.generadoPor)}</td>
+                  <td align="right" style="
+                    color:${CREAM_FAINT};
+                    font-family:'SF Mono','Menlo','Consolas',monospace;
+                    font-size:10px;
+                  ">${escape(data.ticketId.slice(0, 12))}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-    <!-- Bottom -->
-    <div style="padding:16px;text-align:center;border-top:1px solid #222;">
-      <p style="font-size:10px;color:#505050;margin:0;">Gestor de Ingreso</p>
-    </div>
+        </table>
 
-  </div>
+        <!-- Brand mark -->
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;margin-top:20px;">
+          <tr>
+            <td align="center" style="padding:8px 0;">
+              <img src="${LOGO_URL}" alt="Ciclosuma" width="180" height="40" style="display:inline-block;height:24px;width:auto;opacity:0.6;" />
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -132,7 +273,7 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: "Restablecer contraseña - Gestor de Ingreso",
+    subject: "Restablecer contraseña — Ciclosuma",
     html: buildPasswordResetEmailHtml(data),
   });
 
@@ -145,7 +286,7 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
 }
 
 // ============================================
-// Welcome Email (new user setup password)
+// Welcome Email
 // ============================================
 
 interface WelcomeEmailData {
@@ -167,7 +308,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.to,
-    subject: "Bienvenido — Configurá tu contraseña",
+    subject: "Bienvenido a Ciclosuma — Configurá tu contraseña",
     html: buildWelcomeEmailHtml({ ...data, rolDisplay: rolLabel[data.rol] || data.rol }),
   });
 
@@ -179,57 +320,116 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
   return { success: true };
 }
 
-function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }): string {
-  return `
-<!DOCTYPE html>
+// ============================================
+// Helpers
+// ============================================
+
+function escape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildAuthEmailShell({
+  heading,
+  body,
+  ctaLabel,
+  ctaUrl,
+  fineprint,
+}: {
+  heading: string;
+  body: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  fineprint: string;
+}): string {
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A0A0A;padding:24px 16px;">
+<body style="margin:0;padding:0;background-color:${INK};font-family:${FONT_STACK};color:${CREAM};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${INK};padding:32px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="400" cellpadding="0" cellspacing="0" style="max-width:400px;width:100%;">
+        <table role="presentation" width="460" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;">
 
           <!-- Logo -->
           <tr>
-            <td style="padding:32px 0;text-align:center;">
-              <div style="font-size:22px;font-weight:700;letter-spacing:4px;color:#C5A059;">GESTOR</div>
-              <div style="font-size:10px;letter-spacing:3px;color:#A0A0A0;margin-top:4px;">DE INGRESO</div>
+            <td style="padding:8px 0 28px;text-align:center;">
+              <img src="${LOGO_URL}" alt="Ciclosuma" width="240" height="54" style="display:inline-block;height:36px;width:auto;" />
             </td>
           </tr>
 
           <!-- Card -->
           <tr>
-            <td style="background-color:#111111;border:1px solid #333;border-radius:16px;padding:32px 24px;">
-              <div style="font-size:18px;font-weight:700;color:#E8E8E8;margin-bottom:12px;">Bienvenido, ${data.nombre}</div>
-              <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:8px;">
-                Se creó tu cuenta con el rol de <strong style="color:#C5A059;">${data.rolDisplay}</strong>.
-              </div>
-              <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:24px;">
-                Para empezar, configurá tu contraseña haciendo click en el botón:
-              </div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <td style="
+              background-color:${INK_3};
+              border:1px solid ${BORDER};
+              border-radius:14px;
+              padding:32px 28px;
+            ">
+              <div style="
+                color:${CREAM};
+                font-family:${FONT_STACK};
+                font-size:20px;
+                font-weight:700;
+                letter-spacing:-0.02em;
+                margin-bottom:14px;
+              ">${heading}</div>
+
+              <div style="
+                color:${CREAM_MUTED};
+                font-family:${FONT_STACK};
+                font-size:14px;
+                line-height:1.6;
+                margin-bottom:28px;
+              ">${body}</div>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <a href="${data.setupUrl}" style="display:inline-block;background-color:#C5A059;color:#000;font-weight:bold;font-size:16px;padding:15px 30px;border-radius:5px;text-decoration:none;">
-                      CONFIGURAR CONTRASEÑA
-                    </a>
+                    <a href="${ctaUrl}" style="
+                      display:inline-block;
+                      background-color:${LIME};
+                      color:${INK};
+                      font-family:${FONT_STACK};
+                      font-weight:600;
+                      font-size:15px;
+                      letter-spacing:-0.01em;
+                      padding:14px 28px;
+                      border-radius:10px;
+                      text-decoration:none;
+                    ">${ctaLabel}</a>
                   </td>
                 </tr>
               </table>
-              <div style="font-size:12px;color:#505050;margin-top:24px;line-height:1.5;">
-                Este enlace expira en 24 horas.
-              </div>
+
+              <div style="
+                color:${CREAM_FAINT};
+                font-family:${FONT_STACK};
+                font-size:12px;
+                line-height:1.5;
+                margin-top:24px;
+                text-align:center;
+              ">${fineprint}</div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 0;text-align:center;">
-              <div style="font-size:10px;color:#333333;">Gestor de Ingreso</div>
+            <td style="padding:20px 0 8px;text-align:center;">
+              <div style="
+                color:${CREAM_FAINT};
+                font-family:${FONT_STACK};
+                font-size:10px;
+                letter-spacing:0.2em;
+                text-transform:uppercase;
+              ">Ciclosuma</div>
             </td>
           </tr>
 
@@ -241,61 +441,27 @@ function buildWelcomeEmailHtml(data: WelcomeEmailData & { rolDisplay: string }):
 </html>`;
 }
 
+function buildWelcomeEmailHtml(
+  data: WelcomeEmailData & { rolDisplay: string }
+): string {
+  return buildAuthEmailShell({
+    heading: `Bienvenido, ${escape(data.nombre)}`,
+    body: `Se creó tu cuenta en Ciclosuma con el rol de <strong style="color:${CREAM};">${escape(
+      data.rolDisplay
+    )}</strong>. Para empezar, configurá tu contraseña haciendo click en el botón.`,
+    ctaLabel: "Configurar contraseña",
+    ctaUrl: data.setupUrl,
+    fineprint: "Este enlace expira en 24 horas.",
+  });
+}
+
 function buildPasswordResetEmailHtml(data: PasswordResetEmailData): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A0A0A;padding:24px 16px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="400" cellpadding="0" cellspacing="0" style="max-width:400px;width:100%;">
-
-          <!-- Logo -->
-          <tr>
-            <td style="padding:32px 0;text-align:center;">
-              <div style="font-size:22px;font-weight:700;letter-spacing:4px;color:#C5A059;">GESTOR</div>
-              <div style="font-size:10px;letter-spacing:3px;color:#A0A0A0;margin-top:4px;">DE INGRESO</div>
-            </td>
-          </tr>
-
-          <!-- Card -->
-          <tr>
-            <td style="background-color:#111111;border:1px solid #333;border-radius:16px;padding:32px 24px;">
-              <div style="font-size:18px;font-weight:700;color:#E8E8E8;margin-bottom:12px;">Hola ${data.nombre},</div>
-              <div style="font-size:14px;color:#A0A0A0;line-height:1.6;margin-bottom:24px;">
-                Recibimos una solicitud para restablecer tu contraseña. Hacé click en el botón de abajo para crear una nueva.
-              </div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <a href="${data.resetUrl}" style="display:inline-block;background-color:#C5A059;color:#000;font-weight:bold;font-size:16px;padding:15px 30px;border-radius:5px;text-decoration:none;">
-                      RESTABLECER CONTRASEÑA
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <div style="font-size:12px;color:#505050;margin-top:24px;line-height:1.5;">
-                Este enlace expira en 1 hora. Si no solicitaste este cambio, ignorá este email.
-              </div>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding:20px 0;text-align:center;">
-              <div style="font-size:10px;color:#333333;">Gestor de Ingreso</div>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  return buildAuthEmailShell({
+    heading: `Hola ${escape(data.nombre)}`,
+    body: "Recibimos una solicitud para restablecer tu contraseña. Hacé click en el botón de abajo para crear una nueva.",
+    ctaLabel: "Restablecer contraseña",
+    ctaUrl: data.resetUrl,
+    fineprint:
+      "Este enlace expira en 1 hora. Si no solicitaste este cambio, ignorá este email.",
+  });
 }

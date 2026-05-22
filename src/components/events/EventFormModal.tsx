@@ -262,13 +262,13 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
             {brandingGallery.length > 0 && !brandingBgUrl && (
               <div>
                 <label className="text-xs text-dark-400 mb-1.5 block">Imágenes anteriores</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {brandingGallery.map((img) => (
                     <button
                       key={img.url}
                       type="button"
                       onClick={() => setBrandingBgUrl(img.url)}
-                      className="relative rounded-xl overflow-hidden h-16 border border-transparent hover:border-gold-500/50 transition-colors group"
+                      className="relative rounded-xl overflow-hidden h-20 sm:h-16 border border-transparent hover:border-gold-500/50 transition-colors group"
                     >
                       <img src={img.url} alt="" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

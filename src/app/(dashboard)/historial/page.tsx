@@ -153,10 +153,10 @@ export default function HistorialPage() {
                     key={scan.id}
                     className="border-b border-[rgba(255,255,255,0.04)] hover:bg-gold-500/5 transition-colors"
                   >
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-dark-100 truncate max-w-[160px] lg:max-w-none">{scan.nombreInvitado}</p>
-                      <p className="text-xs text-dark-500 sm:hidden">{scan.dniInvitado}</p>
-                      <p className="text-xs text-dark-500 md:hidden mt-0.5">{scan.evento.nombre}</p>
+                    <td className="px-4 py-3 min-w-0">
+                      <p className="font-medium text-dark-100 truncate max-w-[120px] sm:max-w-[160px] lg:max-w-none">{scan.nombreInvitado}</p>
+                      <p className="text-xs text-dark-500 sm:hidden truncate">{scan.dniInvitado}</p>
+                      <p className="text-xs text-dark-500 md:hidden mt-0.5 truncate">{scan.evento.nombre}</p>
                     </td>
                     <td className="px-4 py-3 text-dark-300 hidden sm:table-cell">{scan.dniInvitado}</td>
                     <td className="px-4 py-3 text-dark-300 hidden md:table-cell truncate max-w-[180px]">{scan.evento.nombre}</td>
