@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { todayAR, startOfTodayAR } from "@/lib/date";
 import {
   successResponse,
   requireRole,
@@ -10,8 +11,10 @@ export async function GET() {
     const session = await requireRole("ADMIN", "PORTERO");
     const userId = session.user.id;
 
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // fechaIngreso is a real instant → midnight AR as UTC instant.
+    const ingresoSince = startOfTodayAR();
+    // Evento.fecha is @db.Date → calendar day in AR, anchored at UTC midnight.
+    const todayCalendar = todayAR();
 
     const [estaNoche, totalValidadas, ultimosEscaneos, eventoActivo] =
       await Promise.all([
@@ -19,7 +22,7 @@ export async function GET() {
         prisma.entrada.count({
           where: {
             validadoPorId: userId,
-            fechaIngreso: { gte: todayStart },
+            fechaIngreso: { gte: ingresoSince },
           },
         }),
 
@@ -32,7 +35,7 @@ export async function GET() {
         prisma.entrada.findMany({
           where: {
             validadoPorId: userId,
-            fechaIngreso: { gte: todayStart },
+            fechaIngreso: { gte: ingresoSince },
           },
           select: {
             id: true,
@@ -49,7 +52,7 @@ export async function GET() {
         prisma.evento.findFirst({
           where: {
             activo: true,
-            fecha: { gte: todayStart },
+            fecha: { gte: todayCalendar },
           },
           orderBy: { fecha: "asc" },
           include: {

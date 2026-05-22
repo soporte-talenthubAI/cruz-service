@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEntradaEmail } from "@/lib/email";
+import { formatEventDate } from "@/lib/date";
 import {
   successResponse,
   errorResponse,
@@ -32,9 +33,7 @@ export async function POST(
       return errorResponse("No se puede enviar una entrada invalidada");
     }
 
-    // Format date in Spanish
-    const fecha = new Date(entrada.evento.fecha);
-    const fechaFormateada = fecha.toLocaleDateString("es-AR", {
+    const fechaFormateada = formatEventDate(entrada.evento.fecha, {
       weekday: "long",
       year: "numeric",
       month: "long",

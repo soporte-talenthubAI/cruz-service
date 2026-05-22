@@ -9,6 +9,7 @@ import { QRDisplay } from "@/components/qr/QRDisplay";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { EventCalendar } from "@/components/ui/EventCalendar";
+import { formatEventDate } from "@/lib/date";
 
 interface Evento {
   id: string;
@@ -116,7 +117,7 @@ export default function NuevoQRPage() {
         <PageHeader title="Entrada creada" />
         <QRDisplay
           eventName={entradaCreada.evento.nombre}
-          eventDate={new Date(entradaCreada.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+          eventDate={formatEventDate(entradaCreada.evento.fecha)}
           eventTime={entradaCreada.evento.horaApertura || ""}
           guestDni={entradaCreada.dniInvitado}
           guestEmail={entradaCreada.emailInvitado}

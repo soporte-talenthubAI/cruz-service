@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+import { formatEventDate, formatDateAR } from "@/lib/date";
 
 interface Entrada {
   id: string;
@@ -170,7 +171,7 @@ export default function MisQRsPage() {
                       <Badge variant={estadoVariant[entrada.estado]}>{entrada.estado}</Badge>
                     </td>
                     <td className="px-4 py-3 text-dark-400 text-xs hidden sm:table-cell whitespace-nowrap">
-                      {new Date(entrada.createdAt).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                      {formatDateAR(entrada.createdAt, { day: "numeric", month: "short" })}
                     </td>
                   </tr>
                 ))}
@@ -203,7 +204,7 @@ export default function MisQRsPage() {
         {selected && (
           <QRDisplay
             eventName={selected.evento.nombre}
-            eventDate={new Date(selected.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+            eventDate={formatEventDate(selected.evento.fecha)}
             eventTime={selected.evento.horaApertura || ""}
             guestDni={selected.dniInvitado}
             guestEmail={selected.emailInvitado}

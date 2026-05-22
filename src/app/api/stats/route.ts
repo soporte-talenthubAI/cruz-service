@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { startOfTodayAR } from "@/lib/date";
 import {
   successResponse,
   requireRole,
@@ -35,7 +36,7 @@ export async function GET() {
     const entradasHoy = await prisma.entrada.count({
       where: {
         fechaIngreso: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          gte: startOfTodayAR(),
         },
       },
     });

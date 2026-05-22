@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Spinner } from "@/components/ui/Spinner";
+import { formatDateTimeAR } from "@/lib/date";
 
 interface Usuario {
   id: string;
@@ -350,12 +351,7 @@ export default function UsuariosPage() {
                     <p className="text-xs text-dark-400 mt-1 italic">&ldquo;{req.nota}&rdquo;</p>
                   )}
                   <p className="text-[10px] text-dark-600 mt-1">
-                    {new Date(req.createdAt).toLocaleString("es-AR", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatDateTimeAR(req.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">

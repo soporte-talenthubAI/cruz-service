@@ -1,3 +1,5 @@
+import { formatDateAR } from "./date";
+
 interface EntradaExport {
   nombreInvitado: string;
   dniInvitado: string;
@@ -54,7 +56,7 @@ export async function exportEntradasToExcel(entradas: EntradaExport[], filename:
       evento: e.evento.nombre,
       rrpp: e.generadoPor.nombre,
       estado: e.estado,
-      fecha: new Date(e.createdAt).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" }),
+      fecha: formatDateAR(e.createdAt, { day: "numeric", month: "short", year: "numeric" }),
     });
   }
 
@@ -71,7 +73,7 @@ export async function exportEntradasToPdf(entradas: EntradaExport[], filename: s
   doc.setFontSize(16);
   doc.text("Reporte de Entradas", 14, 20);
   doc.setFontSize(10);
-  doc.text(`Generado: ${new Date().toLocaleDateString("es-AR")} — Total: ${entradas.length}`, 14, 28);
+  doc.text(`Generado: ${formatDateAR(new Date())} — Total: ${entradas.length}`, 14, 28);
 
   autoTable(doc, {
     startY: 34,
@@ -83,7 +85,7 @@ export async function exportEntradasToPdf(entradas: EntradaExport[], filename: s
       e.evento.nombre,
       e.generadoPor.nombre,
       e.estado,
-      new Date(e.createdAt).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" }),
+      formatDateAR(e.createdAt, { day: "numeric", month: "short", year: "numeric" }),
     ]),
     styles: { fontSize: 8 },
     headStyles: { fillColor: [26, 26, 26] },
@@ -172,7 +174,7 @@ export async function exportLiquidacionesToPdf(
   doc.setFontSize(10);
   doc.text("Liquidación de RRPP", pageWidth - 14, 15, { align: "right" });
   doc.setFontSize(8);
-  doc.text(`Fecha: ${new Date().toLocaleDateString("es-AR")}`, pageWidth - 14, 22, { align: "right" });
+  doc.text(`Fecha: ${formatDateAR(new Date())}`, pageWidth - 14, 22, { align: "right" });
 
   // Event info
   doc.setTextColor(40, 40, 40);
@@ -273,7 +275,7 @@ export async function exportRrppDetailPdf(
   doc.setFontSize(10);
   doc.text("Recibo de Liquidación", pageWidth - 14, 15, { align: "right" });
   doc.setFontSize(8);
-  doc.text(`Fecha: ${new Date().toLocaleDateString("es-AR")}`, pageWidth - 14, 22, { align: "right" });
+  doc.text(`Fecha: ${formatDateAR(new Date())}`, pageWidth - 14, 22, { align: "right" });
 
   // RRPP info
   doc.setTextColor(40, 40, 40);

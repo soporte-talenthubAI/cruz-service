@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { startOfTodayAR } from "@/lib/date";
 import {
   successResponse,
   requireAuth,
@@ -10,8 +11,7 @@ export async function GET() {
     const session = await requireAuth();
     const userId = session.user.id;
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfDay = startOfTodayAR();
 
     const [total, hoy] = await Promise.all([
       prisma.entrada.count({

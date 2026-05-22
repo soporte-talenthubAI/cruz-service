@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { todayAR } from "@/lib/date";
 import {
   successResponse,
   errorResponse,
@@ -20,8 +21,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || "10")));
     const skip = (page - 1) * limit;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Today in Argentina time, anchored as UTC midnight to match @db.Date semantics.
+    const today = todayAR();
 
     // Build where clause
     const where: Record<string, unknown> = {};
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
     if (monthParam && yearParam) {
       const m = Number(monthParam);
       const y = Number(yearParam);
-      const startDate = new Date(y, m - 1, 1);
-      const endDate = new Date(y, m, 0, 23, 59, 59);
+      const startDate = new Date(Date.UTC(y, m - 1, 1));
+      const endDate = new Date(Date.UTC(y, m, 0));
       where.fecha = { gte: startDate, lte: endDate };
       where.activo = true;
     } else if (status === "upcoming") {

@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { formatTime12h } from "@/lib/utils";
+import { formatEventDate, formatTimeAR } from "@/lib/date";
 
 interface Stats {
   eventos: { total: number; activos: number };
@@ -163,7 +164,7 @@ function AdminDashboard() {
             <div>
               <p className="text-base font-semibold text-dark-100">{ev.nombre}</p>
               <p className="text-xs text-dark-400 mt-0.5">
-                {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
+                {formatEventDate(ev.fecha, { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
               </p>
             </div>
             <div>
@@ -221,7 +222,7 @@ function AdminDashboard() {
               <EventCard
                 key={e.id}
                 name={e.nombre}
-                date={new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
+                date={formatEventDate(e.fecha, { day: "numeric", month: "short", year: "numeric" })}
                 time={formatTime12h(e.horaApertura)}
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}
@@ -319,7 +320,7 @@ function PorteroDashboard() {
           <div>
             <p className="text-base font-semibold text-dark-100">{ev.nombre}</p>
             <p className="text-xs text-dark-400 mt-0.5">
-              {new Date(ev.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
+              {formatEventDate(ev.fecha, { day: "numeric", month: "long" })} — {formatTime12h(ev.horaApertura)}
             </p>
           </div>
           {/* Progress bar */}
@@ -365,7 +366,7 @@ function PorteroDashboard() {
                 <div className="flex items-center gap-1.5 text-dark-400 shrink-0">
                   <Clock size={12} />
                   <span className="text-xs">
-                    {new Date(scan.fechaIngreso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                    {formatTimeAR(scan.fechaIngreso)}
                   </span>
                 </div>
               </div>

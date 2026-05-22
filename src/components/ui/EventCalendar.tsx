@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Clock } from "lucide-react";
 import { cn, formatTime12h } from "@/lib/utils";
+import { formatEventDate } from "@/lib/date";
 
 export interface CalendarEvent {
   id: string;
@@ -60,13 +61,14 @@ export function EventCalendar({
       ? now.getDate()
       : null;
 
-  // Group events by day number
+  // Group events by day number. Evento.fecha is a DATE column hydrated as UTC midnight,
+  // so we read it back in UTC to get the calendar day the admin selected.
   const eventsByDay = useMemo(() => {
     const map: Record<number, CalendarEvent[]> = {};
     for (const ev of eventos) {
       const d = new Date(ev.fecha);
-      if (d.getMonth() + 1 === month && d.getFullYear() === year) {
-        const day = d.getDate();
+      if (d.getUTCMonth() + 1 === month && d.getUTCFullYear() === year) {
+        const day = d.getUTCDate();
         if (!map[day]) map[day] = [];
         map[day].push(ev);
       }
@@ -108,10 +110,7 @@ export function EventCalendar({
               {selectedEvento.nombre}
             </p>
             <p className="text-xs text-dark-400">
-              {new Date(selectedEvento.fecha).toLocaleDateString("es-AR", {
-                day: "numeric",
-                month: "short",
-              })}
+              {formatEventDate(selectedEvento.fecha, { day: "numeric", month: "short" })}
               {selectedEvento.horaApertura && ` — ${formatTime12h(selectedEvento.horaApertura)}`}
             </p>
           </div>

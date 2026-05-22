@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatTime12h } from "@/lib/utils";
+import { formatEventDate } from "@/lib/date";
 
 interface Evento {
   id: string;
@@ -97,7 +98,7 @@ export default function InicioPage() {
               <EventCard
                 key={e.id}
                 name={e.nombre}
-                date={new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+                date={formatEventDate(e.fecha)}
                 time={formatTime12h(e.horaApertura)}
                 type={e.tipo.toLowerCase() as "normal" | "especial"}
                 capacity={e.capacidad}

@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatTime12h } from "@/lib/utils";
+import { formatEventDate } from "@/lib/date";
 import { EventFormModal } from "@/components/events/EventFormModal";
 
 interface EventoStats {
@@ -145,12 +146,12 @@ export default function EventosPage() {
                       <td className="px-4 py-3 min-w-0">
                         <p className="font-medium text-dark-100 truncate max-w-[120px] sm:max-w-[180px] lg:max-w-[300px]">{e.nombre}</p>
                         <p className="text-xs text-dark-500 sm:hidden mt-0.5">
-                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short" })} — {formatTime12h(e.horaApertura)}
+                          {formatEventDate(e.fecha, { day: "numeric", month: "short" })} — {formatTime12h(e.horaApertura)}
                         </p>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
                         <p className="text-dark-200 text-xs whitespace-nowrap">
-                          {new Date(e.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
+                          {formatEventDate(e.fecha, { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                         <p className="text-dark-500 text-xs">{formatTime12h(e.horaApertura)}</p>
                       </td>

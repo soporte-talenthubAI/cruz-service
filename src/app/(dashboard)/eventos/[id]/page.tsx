@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { StatCard } from "@/components/ui/StatCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatTime12h } from "@/lib/utils";
+import { formatEventDate } from "@/lib/date";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
 import { QRDisplay } from "@/components/qr/QRDisplay";
@@ -316,7 +317,7 @@ export default function EventoDetallePage() {
 
       <PageHeader
         title={evento?.nombre || eventoDetalle?.nombre || "Evento"}
-        subtitle={evento ? `${new Date(evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })} — ${formatTime12h(evento.horaApertura)}` : ""}
+        subtitle={evento ? `${formatEventDate(evento.fecha)} — ${formatTime12h(evento.horaApertura)}` : ""}
         actions={
           <div className="flex gap-2 flex-wrap">
             {eventoDetalle && (
@@ -521,7 +522,7 @@ export default function EventoDetallePage() {
         {selected && (
           <QRDisplay
             eventName={selected.evento.nombre}
-            eventDate={new Date(selected.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+            eventDate={formatEventDate(selected.evento.fecha)}
             eventTime={selected.evento.horaApertura || ""}
             guestDni={selected.dniInvitado}
             guestEmail={selected.emailInvitado}

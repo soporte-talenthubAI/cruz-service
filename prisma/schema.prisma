@@ -70,7 +70,7 @@ model PasswordResetRequest {
 model Evento {
   id           String     @id @default(cuid())
   nombre       String
-  fecha        DateTime
+  fecha        DateTime   @db.Date
   horaApertura String
   tipo         TipoEvento @default(NORMAL)
   capacidad    Int

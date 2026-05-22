@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
 import { exportLiquidacionesToExcel, exportLiquidacionesToPdf, exportRrppDetailPdf } from "@/lib/export";
+import { formatEventDate } from "@/lib/date";
 
 interface RrppUser {
   id: string;
@@ -272,7 +273,7 @@ export default function LiquidacionesPage() {
                               l.rrpp.nombre,
                               l.rrpp.email,
                               data.evento.nombre,
-                              new Date(data.evento.fecha).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }),
+                              formatEventDate(data.evento.fecha),
                               l.montoPorQr,
                               l.totalGeneradas,
                               l.totalIngresadas,

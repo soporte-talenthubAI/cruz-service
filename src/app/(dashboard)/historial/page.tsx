@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { EventCalendar, type CalendarEvent } from "@/components/ui/EventCalendar";
+import { formatTimeAR, formatDateAR } from "@/lib/date";
 
 interface Escaneo {
   id: string;
@@ -161,10 +162,10 @@ export default function HistorialPage() {
                     <td className="px-4 py-3 text-dark-300 hidden sm:table-cell">{scan.dniInvitado}</td>
                     <td className="px-4 py-3 text-dark-300 hidden md:table-cell truncate max-w-[180px]">{scan.evento.nombre}</td>
                     <td className="px-4 py-3 text-dark-300 text-xs whitespace-nowrap">
-                      {new Date(scan.fechaIngreso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                      {formatTimeAR(scan.fechaIngreso)}
                     </td>
                     <td className="px-4 py-3 text-dark-400 text-xs hidden sm:table-cell whitespace-nowrap">
-                      {new Date(scan.fechaIngreso).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                      {formatDateAR(scan.fechaIngreso, { day: "numeric", month: "short" })}
                     </td>
                   </tr>
                 ))}
