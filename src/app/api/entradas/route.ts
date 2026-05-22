@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
               brandingLayout: true,
             },
           },
-          generadoPor: { select: { nombre: true } },
+          generadoPor: { select: { nombre: true, rol: true } },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
             brandingLayout: true,
           },
         },
-        generadoPor: { select: { nombre: true } },
+        generadoPor: { select: { nombre: true, rol: true } },
       },
     });
 

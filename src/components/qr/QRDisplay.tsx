@@ -17,6 +17,7 @@ interface QRDisplayProps {
   guestDni: string;
   guestEmail?: string;
   generatedBy: string;
+  generatorRole?: string | null;
   ticketId: string;
   qrCode: string;
   status: TicketStatus;
@@ -44,6 +45,7 @@ export function QRDisplay({
   guestDni,
   guestEmail,
   generatedBy,
+  generatorRole,
   ticketId,
   qrCode,
   status,
@@ -261,12 +263,15 @@ export function QRDisplay({
 
           {/* Footer */}
           <div className={cn(
-            "flex items-center justify-between gap-2 px-5 py-3 border-t border-[rgba(235,241,226,0.06)]",
+            "flex items-center gap-2 px-5 py-3 border-t border-[rgba(235,241,226,0.06)]",
+            generatorRole === "ADMIN" ? "justify-center" : "justify-between",
             sectionBg
           )}>
-            <span className="text-[10px] uppercase tracking-wide text-[#5e6258] truncate">
-              Por {generatedBy}
-            </span>
+            {generatorRole !== "ADMIN" && (
+              <span className="text-[10px] uppercase tracking-wide text-[#5e6258] truncate">
+                Por {generatedBy}
+              </span>
+            )}
             <span className="text-[10px] text-[#5e6258] font-mono tracking-tight shrink-0">
               {ticketId.slice(0, 12)}
             </span>

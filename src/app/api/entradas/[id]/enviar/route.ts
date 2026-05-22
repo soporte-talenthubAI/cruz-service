@@ -21,7 +21,7 @@ export async function POST(
       where: { id },
       include: {
         evento: true,
-        generadoPor: { select: { nombre: true } },
+        generadoPor: { select: { nombre: true, rol: true } },
       },
     });
 
@@ -50,6 +50,7 @@ export async function POST(
       qrCode: entrada.qrCode,
       ticketId: entrada.id,
       generadoPor: entrada.generadoPor.nombre,
+      generadoPorRol: entrada.generadoPor.rol,
       brandingBgUrl: entrada.evento.brandingBgUrl || undefined,
       brandingColorPrimary: entrada.evento.brandingColorPrimary || undefined,
       brandingColorText: entrada.evento.brandingColorText || undefined,

@@ -28,7 +28,7 @@ interface EntradaCreada {
   qrCode: string;
   estado: string;
   evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null; brandingLayout?: "banner" | "centered" | "fullbg" | null };
-  generadoPor: { nombre: string };
+  generadoPor: { nombre: string; rol?: string };
 }
 
 export default function NuevoQRPage() {
@@ -122,6 +122,7 @@ export default function NuevoQRPage() {
           guestDni={entradaCreada.dniInvitado}
           guestEmail={entradaCreada.emailInvitado}
           generatedBy={entradaCreada.generadoPor.nombre}
+          generatorRole={entradaCreada.generadoPor.rol}
           ticketId={entradaCreada.id}
           qrCode={entradaCreada.qrCode}
           status={entradaCreada.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}

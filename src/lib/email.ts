@@ -46,6 +46,7 @@ interface EntradaEmailData {
   qrCode: string;
   ticketId: string;
   generadoPor: string;
+  generadoPorRol?: string;
   brandingBgUrl?: string;
   brandingColorPrimary?: string;
   brandingColorText?: string;
@@ -234,14 +235,14 @@ function buildEntradaEmailHtml(
             <td style="background-color:${INK_2};padding:14px 24px;border-top:1px solid ${BORDER};">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="left" style="
+                  ${data.generadoPorRol !== "ADMIN" ? `<td align="left" style="
                     color:${CREAM_FAINT};
                     font-family:${FONT_STACK};
                     font-size:10px;
                     letter-spacing:0.08em;
                     text-transform:uppercase;
-                  ">Por ${escape(data.generadoPor)}</td>
-                  <td align="right" style="
+                  ">Por ${escape(data.generadoPor)}</td>` : ""}
+                  <td align="${data.generadoPorRol === "ADMIN" ? "center" : "right"}" style="
                     color:${CREAM_FAINT};
                     font-family:'SF Mono','Menlo','Consolas',monospace;
                     font-size:10px;

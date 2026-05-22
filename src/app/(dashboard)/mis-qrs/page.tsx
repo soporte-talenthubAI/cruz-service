@@ -20,7 +20,7 @@ interface Entrada {
   qrCode: string;
   createdAt: string;
   evento: { nombre: string; fecha: string; horaApertura: string; brandingBgUrl?: string | null; brandingColorPrimary?: string | null; brandingColorText?: string | null; brandingLayout?: "banner" | "centered" | "fullbg" | null };
-  generadoPor: { nombre: string };
+  generadoPor: { nombre: string; rol?: string };
 }
 
 const estadoVariant: Record<string, "pendiente" | "enviado" | "ingresado" | "invalidado"> = {
@@ -209,6 +209,7 @@ export default function MisQRsPage() {
             guestDni={selected.dniInvitado}
             guestEmail={selected.emailInvitado}
             generatedBy={selected.generadoPor.nombre}
+            generatorRole={selected.generadoPor.rol}
             ticketId={selected.id}
             qrCode={selected.qrCode}
             status={selected.estado.toLowerCase() as "pendiente" | "enviado" | "ingresado" | "invalidado"}
