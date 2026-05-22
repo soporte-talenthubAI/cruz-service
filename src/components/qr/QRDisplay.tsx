@@ -190,7 +190,7 @@ export function QRDisplay({
               width={480}
               height={108}
               className={cn(
-                "h-14 sm:h-16 w-auto",
+                "h-20 sm:h-24 w-auto",
                 isFullBg && "drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
               )}
               priority
@@ -244,7 +244,7 @@ export function QRDisplay({
           {/* Event name (below QR) */}
           <div className={cn("px-5 pb-2 text-center", sectionBg)}>
             <h3 className={cn(
-              "text-base sm:text-lg font-semibold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]",
+              "text-xs sm:text-sm font-medium tracking-tight leading-tight line-clamp-2 text-[#9a9f93]",
               isFullBg && "drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
             )}>
               {eventName}

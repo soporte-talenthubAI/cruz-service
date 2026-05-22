@@ -114,7 +114,7 @@ function buildEntradaEmailHtml(
   const topLogoBlock = `
       <tr>
         <td style="padding:32px 24px 24px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
-          <img src="${LOGO_URL}" alt="Ciclosuma" width="320" height="72" style="display:inline-block;height:56px;width:auto;" />
+          <img src="${LOGO_URL}" alt="Ciclosuma" width="480" height="108" style="display:inline-block;height:80px;width:auto;" />
         </td>
       </tr>`;
 
@@ -123,10 +123,10 @@ function buildEntradaEmailHtml(
       <tr>
         <td style="background-color:${INK};padding:8px 24px 0;text-align:center;">
           <div style="
-            color:${CREAM};
+            color:${CREAM_MUTED};
             font-family:${FONT_STACK};
-            font-size:16px;
-            font-weight:600;
+            font-size:13px;
+            font-weight:500;
             letter-spacing:-0.01em;
             line-height:1.3;
           ">${escape(data.eventoNombre)}</div>
