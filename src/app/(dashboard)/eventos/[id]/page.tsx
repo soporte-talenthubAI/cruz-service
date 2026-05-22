@@ -418,12 +418,12 @@ export default function EventoDetallePage() {
         {eventoDetalle?.rrppAsignados && eventoDetalle.rrppAsignados.length > 0 ? (
           <div className="space-y-2">
             {eventoDetalle.rrppAsignados.map((r) => (
-              <div key={r.id} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-dark-200">{r.usuario.nombre}</p>
-                  <p className="text-xs text-dark-500">{r.usuario.email}</p>
+              <div key={r.id} className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-dark-200 truncate">{r.usuario.nombre}</p>
+                  <p className="text-xs text-dark-500 truncate">{r.usuario.email}</p>
                 </div>
-                <span className="text-xs text-dark-400 flex items-center gap-1">
+                <span className="text-xs text-dark-400 flex items-center gap-1 shrink-0 whitespace-nowrap">
                   <DollarSign size={10} />
                   {r.montoPorQr}/QR
                 </span>
@@ -482,14 +482,16 @@ export default function EventoDetallePage() {
               onClick={() => setSelected(entrada)}
               className="w-full glass-card p-4 flex items-center justify-between gap-3 text-left transition-colors hover:border-gold-500/30"
             >
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-dark-100 truncate">{entrada.nombreInvitado}</p>
-                <p className="text-xs text-dark-400">DNI: {entrada.dniInvitado}</p>
-                <p className="text-xs text-dark-500 mt-0.5">{entrada.generadoPor.nombre}</p>
+                <p className="text-xs text-dark-400 truncate">DNI: {entrada.dniInvitado}</p>
+                <p className="text-xs text-dark-500 mt-0.5 truncate">{entrada.generadoPor.nombre}</p>
               </div>
-              <Badge variant={estadoVariant[entrada.estado]}>
-                {entrada.estado}
-              </Badge>
+              <div className="shrink-0">
+                <Badge variant={estadoVariant[entrada.estado]}>
+                  {entrada.estado}
+                </Badge>
+              </div>
             </button>
           ))}
 

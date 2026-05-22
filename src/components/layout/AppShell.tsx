@@ -27,7 +27,7 @@ export function AppShell({
   notificationCount,
   className,
 }: AppShellProps) {
-  const hasBottomNav = role !== "portero";
+  const hasBottomNav = true; // todos los roles tienen items definidos en BottomNav
 
   return (
     <div className="min-h-[100dvh] bg-[#0d0d0d] overflow-x-clip">
@@ -58,6 +58,8 @@ export function AppShell({
       >
         <div className="w-full min-w-0 lg:max-w-6xl">{children}</div>
       </main>
+
+      {hasBottomNav && <BottomNav role={role} />}
     </div>
   );
 }

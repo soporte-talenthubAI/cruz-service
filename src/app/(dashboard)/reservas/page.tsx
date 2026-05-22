@@ -70,9 +70,9 @@ export default function ReservasPage() {
       <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-6 space-y-4 lg:space-y-0">
         {/* Interactive map */}
         <div className="glass-card p-4 overflow-hidden">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <h3 className="text-sm font-medium text-dark-200">Mapa del local</h3>
-            <div className="flex items-center gap-3 text-[10px] text-dark-500">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-dark-500">
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded-sm bg-gold-500/30 border border-gold-500/50" /> VIP
               </span>

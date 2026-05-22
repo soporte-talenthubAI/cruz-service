@@ -76,9 +76,9 @@ export default function PerfilPage() {
           size="lg"
           role={rolLabel === "ADMIN" ? "admin" : rolLabel === "RRPP" ? "rrpp" : "portero"}
         />
-        <div>
-          <h2 className="text-xl font-bold text-dark-50">{user?.name}</h2>
-          <p className="text-sm text-dark-400 mt-1">{user?.email}</p>
+        <div className="min-w-0 w-full">
+          <h2 className="text-xl font-bold text-dark-50 break-words">{user?.name}</h2>
+          <p className="text-sm text-dark-400 mt-1 break-all">{user?.email}</p>
           <div className="mt-2">
             <Badge variant={rolVariant}>{rolLabel}</Badge>
           </div>

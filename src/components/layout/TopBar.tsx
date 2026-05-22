@@ -58,8 +58,8 @@ export function TopBar({
     >
       <div className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Mobile: logo */}
-        <div className="lg:hidden flex items-center">
-          <Logo variant="cream" size="sm" priority />
+        <div className="lg:hidden flex items-center min-w-0">
+          <Logo variant="cream" size="md" priority />
         </div>
         {/* Desktop spacer */}
         <span className="hidden lg:block" />
