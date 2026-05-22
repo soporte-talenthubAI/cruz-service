@@ -129,16 +129,23 @@ function buildEntradaEmailHtml(
       </tr>`
     : `
       <tr>
-        <td style="padding:32px 24px 16px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
-          <img src="${LOGO_URL}" alt="Ciclosuma" width="220" height="50" style="display:inline-block;height:36px;width:auto;margin-bottom:16px;" />
+        <td style="padding:24px 24px 20px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
           <div style="
             color:${CREAM};
             font-family:${FONT_STACK};
-            font-size:20px;
+            font-size:22px;
             font-weight:700;
             letter-spacing:-0.02em;
             line-height:1.2;
           ">${escape(data.eventoNombre)}</div>
+        </td>
+      </tr>`;
+
+  // Top brand strip — always rendered above the hero
+  const topLogoBlock = `
+      <tr>
+        <td style="padding:20px 24px 14px;text-align:center;background-color:${INK};border-bottom:1px solid ${BORDER};">
+          <img src="${LOGO_URL}" alt="Ciclosuma" width="220" height="50" style="display:inline-block;height:40px;width:auto;" />
         </td>
       </tr>`;
 
@@ -155,6 +162,7 @@ function buildEntradaEmailHtml(
       <td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background-color:${INK};border:1px solid ${BORDER};border-radius:14px;overflow:hidden;">
 
+          ${topLogoBlock}
           ${heroBlock}
 
           <!-- Date / time strip -->

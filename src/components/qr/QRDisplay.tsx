@@ -179,9 +179,27 @@ export function QRDisplay({
             <Badge variant={status}>{status.toUpperCase()}</Badge>
           </div>
 
+          {/* Top brand strip — always visible */}
+          <div className={cn(
+            "flex justify-center px-5 pt-5 pb-3",
+            !isFullBg && "bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)]"
+          )}>
+            <Image
+              src="/images/logo-ciclosuma-cream.png"
+              alt="Ciclosuma"
+              width={480}
+              height={108}
+              className={cn(
+                "h-9 sm:h-10 w-auto",
+                isFullBg && "drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+              )}
+              priority
+            />
+          </div>
+
           {/* Header */}
           {isFullBg ? (
-            <div className="px-6 pt-12 pb-3 text-center">
+            <div className="px-6 pt-4 pb-3 text-center">
               <h3 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                 {eventName}
               </h3>
@@ -207,16 +225,8 @@ export function QRDisplay({
               </div>
             </div>
           ) : (
-            <div className="relative h-40 sm:h-48 flex flex-col items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center gap-3">
-              <Image
-                src="/images/logo-ciclosuma-cream.png"
-                alt="Ciclosuma"
-                width={480}
-                height={108}
-                className="h-14 sm:h-16 w-auto opacity-90"
-                priority
-              />
-              <h3 className="text-base sm:text-lg font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
+            <div className="relative h-24 sm:h-28 flex items-center justify-center bg-[#0d0d0d] border-b border-[rgba(235,241,226,0.06)] px-6 text-center">
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-[#ebf1e2]">
                 {eventName}
               </h3>
             </div>
@@ -277,21 +287,6 @@ export function QRDisplay({
             </span>
           </div>
 
-          {/* Bottom brand mark (only when branding active) */}
-          {hasBranding && (
-            <div className={cn(
-              "border-t border-[rgba(235,241,226,0.06)] py-4 flex justify-center",
-              sectionBg
-            )}>
-              <Image
-                src="/images/logo-ciclosuma-cream.png"
-                alt="Ciclosuma"
-                width={320}
-                height={72}
-                className="h-8 w-auto opacity-60"
-              />
-            </div>
-          )}
         </div>
       </div>
 
