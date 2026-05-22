@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Search, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -65,6 +65,10 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
   // RRPP (only used on create)
   const [rrppList, setRrppList] = useState<RrppOption[]>([]);
   const [rrppAsignados, setRrppAsignados] = useState<RrppAsignado[]>([]);
+  const [rrppSearch, setRrppSearch] = useState("");
+  const [rrppPage, setRrppPage] = useState(1);
+  const [rrppOnlySelected, setRrppOnlySelected] = useState(false);
+  const RRPP_PAGE_SIZE = 8;
 
   // Hydrate state when modal opens
   useEffect(() => {
@@ -96,6 +100,9 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
       setBrandingColorText("#FFFFFF");
       setBrandingLayout("banner");
       setRrppAsignados([]);
+      setRrppSearch("");
+      setRrppPage(1);
+      setRrppOnlySelected(false);
     }
 
     fetchBrandingGallery();
@@ -397,53 +404,19 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
 
         {/* RRPP — only on create. Edit mode manages this separately. */}
         {!isEdit && rrppList.length > 0 && (
-          <div>
-            <label className="text-sm text-dark-300 mb-2 block">
-              Asignar RRPP ({rrppAsignados.length} seleccionado{rrppAsignados.length !== 1 ? "s" : ""})
-            </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {rrppList.map((rrpp) => {
-                const isSelected = rrppAsignados.some((r) => r.usuarioId === rrpp.id);
-                const asignado = rrppAsignados.find((r) => r.usuarioId === rrpp.id);
-                return (
-                  <div key={rrpp.id} className="space-y-1.5">
-                    <button
-                      type="button"
-                      onClick={() => toggleRrpp(rrpp.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${
-                        isSelected
-                          ? "bg-gold-500/10 border border-gold-500/30"
-                          : "bg-surface-2 border border-transparent hover:border-dark-700"
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? "bg-gold-500 text-black" : "bg-dark-700 border border-dark-600"
-                        }`}
-                      >
-                        {isSelected && <Check size={14} />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-dark-200 truncate">{rrpp.nombre}</p>
-                        <p className="text-xs text-dark-500 truncate">{rrpp.email}</p>
-                      </div>
-                    </button>
-                    {isSelected && (
-                      <div className="pl-8">
-                        <Input
-                          label="Monto por QR ($)"
-                          type="number"
-                          step="0.01"
-                          value={asignado?.montoPorQr?.toString() ?? ""}
-                          onChange={(e) => updateMonto(rrpp.id, e.target.value === "" ? "" : Number(e.target.value))}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <RrppPicker
+            rrppList={rrppList}
+            rrppAsignados={rrppAsignados}
+            search={rrppSearch}
+            onSearchChange={(v) => { setRrppSearch(v); setRrppPage(1); }}
+            page={rrppPage}
+            onPageChange={setRrppPage}
+            onlySelected={rrppOnlySelected}
+            onOnlySelectedChange={(v) => { setRrppOnlySelected(v); setRrppPage(1); }}
+            pageSize={RRPP_PAGE_SIZE}
+            onToggle={toggleRrpp}
+            onUpdateMonto={updateMonto}
+          />
         )}
 
         <Button type="submit" variant="gold" size="lg" loading={submitting} className="w-full mt-2">
@@ -451,6 +424,177 @@ export function EventFormModal({ open, mode, initialData, onClose, onSuccess }: 
         </Button>
       </form>
     </Modal>
+  );
+}
+
+// ============================================
+// RRPP picker (search + pagination)
+// ============================================
+
+interface RrppPickerProps {
+  rrppList: RrppOption[];
+  rrppAsignados: RrppAsignado[];
+  search: string;
+  onSearchChange: (v: string) => void;
+  page: number;
+  onPageChange: (p: number) => void;
+  onlySelected: boolean;
+  onOnlySelectedChange: (v: boolean) => void;
+  pageSize: number;
+  onToggle: (id: string) => void;
+  onUpdateMonto: (id: string, monto: number | string) => void;
+}
+
+function RrppPicker({
+  rrppList,
+  rrppAsignados,
+  search,
+  onSearchChange,
+  page,
+  onPageChange,
+  onlySelected,
+  onOnlySelectedChange,
+  pageSize,
+  onToggle,
+  onUpdateMonto,
+}: RrppPickerProps) {
+  const selectedIds = useMemo(() => new Set(rrppAsignados.map((r) => r.usuarioId)), [rrppAsignados]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rrppList.filter((r) => {
+      if (onlySelected && !selectedIds.has(r.id)) return false;
+      if (!q) return true;
+      return r.nombre.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
+    });
+  }, [rrppList, search, onlySelected, selectedIds]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const selectedCount = rrppAsignados.length;
+
+  return (
+    <div>
+      <label className="text-sm text-dark-300 mb-2 block">
+        Asignar RRPP ({selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""})
+      </label>
+
+      <div className="flex flex-col sm:flex-row gap-2 mb-3">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre o email"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-surface-2 border border-dark-700 rounded-xl pl-9 pr-9 py-2 text-sm text-dark-200 placeholder:text-dark-500 focus:outline-none focus:border-gold-500/40 transition-colors"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-dark-500 hover:text-dark-200"
+              aria-label="Limpiar"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => onOnlySelectedChange(!onlySelected)}
+          disabled={selectedCount === 0 && !onlySelected}
+          className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed ${
+            onlySelected
+              ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
+              : "bg-surface-2 text-dark-300 border border-dark-700 hover:border-dark-600"
+          }`}
+        >
+          Solo seleccionados {selectedCount > 0 && `(${selectedCount})`}
+        </button>
+      </div>
+
+      <div className="space-y-2 min-h-[200px]">
+        {pageItems.length === 0 ? (
+          <p className="text-xs text-dark-500 text-center py-8">
+            {onlySelected
+              ? "No seleccionaste ningún RRPP todavía."
+              : search
+              ? "No hay resultados para esa búsqueda."
+              : "No hay RRPPs disponibles."}
+          </p>
+        ) : (
+          pageItems.map((rrpp) => {
+            const isSelected = selectedIds.has(rrpp.id);
+            const asignado = rrppAsignados.find((r) => r.usuarioId === rrpp.id);
+            return (
+              <div key={rrpp.id} className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => onToggle(rrpp.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${
+                    isSelected
+                      ? "bg-gold-500/10 border border-gold-500/30"
+                      : "bg-surface-2 border border-transparent hover:border-dark-700"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                      isSelected ? "bg-gold-500 text-black" : "bg-dark-700 border border-dark-600"
+                    }`}
+                  >
+                    {isSelected && <Check size={14} />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-dark-200 truncate">{rrpp.nombre}</p>
+                    <p className="text-xs text-dark-500 truncate">{rrpp.email}</p>
+                  </div>
+                </button>
+                {isSelected && (
+                  <div className="pl-8">
+                    <Input
+                      label="Monto por QR ($)"
+                      type="number"
+                      step="0.01"
+                      value={asignado?.montoPorQr?.toString() ?? ""}
+                      onChange={(e) => onUpdateMonto(rrpp.id, e.target.value === "" ? "" : Number(e.target.value))}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-dark-700">
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-dark-300 hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={14} />
+            Anterior
+          </button>
+          <span className="text-xs text-dark-500">
+            Página {currentPage} de {totalPages} · {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
+          </span>
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-dark-300 hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Siguiente
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
